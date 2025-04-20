@@ -1,0 +1,10 @@
+/node_modules
+/docs
+/.tap
+/*.json
+/example
+/.github
+/dist
+/tap-snapshots
+/benchmark
+/.tshy
