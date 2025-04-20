@@ -1,9 +1,13 @@
 import { makeMap, isBuiltInTag, cached, no } from 'shared/util'
 import { ASTElement, CompilerOptions, ASTNode } from 'types/compiler'
 
+/** 静态键的判断函数 */
 let isStaticKey
+
+/** 判断是否为平台保留标签的函数 */
 let isPlatformReservedTag
 
+/** 缓存生成静态键的函数 */
 const genStaticKeysCached = cached(genStaticKeys)
 
 /**
@@ -16,6 +20,12 @@ const genStaticKeysCached = cached(genStaticKeys)
  * 1. Hoist them into constants, so that we no longer need to
  *    create fresh nodes for them on each re-render;
  * 2. Completely skip them in the patching process.
+ */
+/**
+ * 优化抽象语法树 (AST) 的方法。
+ *
+ * @param root 抽象语法树的根节点。
+ * @param options 编译器选项，用于指定静态键和平台保留标签等。
  */
 export function optimize(
   root: ASTElement | null | undefined,
@@ -30,6 +40,11 @@ export function optimize(
   markStaticRoots(root, false)
 }
 
+/**
+ * 生成静态键的函数
+ * @param keys 额外的静态键
+ * @returns 判断是否为静态键的函数
+ */
 function genStaticKeys(keys: string): Function {
   return makeMap(
     'type,tag,attrsList,attrsMap,plain,parent,children,attrs,start,end,rawAttrsMap' +
@@ -37,6 +52,21 @@ function genStaticKeys(keys: string): Function {
   )
 }
 
+/**
+ * 标记节点是否为静态节点。
+ * @param node - 要检查的 AST 节点。
+ *
+ * 静态节点的判断逻辑：
+ * - 如果节点类型为 1（元素节点），则需要进一步判断：
+ *   - 如果节点不是平台保留标签、不是插槽标签，且没有内联模板属性，则直接返回。
+ *   - 遍历子节点并递归调用 `markStatic`，如果子节点中有非静态节点，则当前节点也标记为非静态。
+ *   - 如果存在条件渲染块（`ifConditions`），则递归检查每个条件块的静态性。
+ *
+ * 注意：
+ * - 不将组件插槽内容标记为静态，以避免以下问题：
+ *   1. 组件无法修改插槽节点。
+ *   2. 静态插槽内容在热重载时失效。
+ */
 function markStatic(node: ASTNode) {
   node.static = isStatic(node)
   if (node.type === 1) {
@@ -69,29 +99,52 @@ function markStatic(node: ASTNode) {
   }
 }
 
+/**
+ * 标记节点是否为静态根节点。
+ * @param node - 当前处理的 AST 节点。
+ * @param isInFor - 当前节点是否在 v-for 循环中。
+ */
 function markStaticRoots(node: ASTNode, isInFor: boolean) {
   if (node.type === 1) {
+    /**
+     * 如果节点是静态的或者使用了 v-once 指令，则标记其是否在 v-for 中。
+     */
     if (node.static || node.once) {
       node.staticInFor = isInFor
     }
-    // For a node to qualify as a static root, it should have children that
-    // are not just static text. Otherwise the cost of hoisting out will
-    // outweigh the benefits and it's better off to just always render it fresh.
+    /**
+     * 判断节点是否可以作为静态根节点：
+     * - 节点必须是静态的。
+     * - 节点必须有子节点，且子节点不能仅仅是一个静态文本节点。
+     */
     if (
       node.static &&
       node.children.length &&
       !(node.children.length === 1 && node.children[0].type === 3)
     ) {
+      /**
+       * 标记为静态根节点。
+       */
       node.staticRoot = true
       return
     } else {
+      /**
+       * 如果不满足条件，则标记为非静态根节点。
+       */
       node.staticRoot = false
     }
+    /**
+     * 遍历子节点，递归调用 markStaticRoots。
+     */
     if (node.children) {
       for (let i = 0, l = node.children.length; i < l; i++) {
         markStaticRoots(node.children[i], isInFor || !!node.for)
       }
     }
+    /**
+     * 如果节点有条件分支 (v-if / v-else-if / v-else)，
+     * 则递归处理每个条件块。
+     */
     if (node.ifConditions) {
       for (let i = 1, l = node.ifConditions.length; i < l; i++) {
         markStaticRoots(node.ifConditions[i].block, isInFor)
@@ -100,6 +153,23 @@ function markStaticRoots(node: ASTNode, isInFor: boolean) {
   }
 }
 
+/**
+ * 判断一个 AST 节点是否是静态节点。
+ *
+ * 静态节点的定义：
+ * - 类型为文本节点（type === 3）。
+ * - 或者满足以下条件：
+ *   - 包含 `pre` 属性。
+ *   - 没有动态绑定（hasBindings 为 false）。
+ *   - 不包含 `v-if`、`v-for` 或 `v-else` 指令。
+ *   - 不是内置标签（通过 `isBuiltInTag` 判断）。
+ *   - 是平台保留标签（通过 `isPlatformReservedTag` 判断）。
+ *   - 不是 `template` 的直接子节点。
+ *   - 所有键都为静态键（通过 `isStaticKey` 判断）。
+ *
+ * @param node AST 节点对象
+ * @returns 如果是静态节点返回 `true`，否则返回 `false`
+ */
 function isStatic(node: ASTNode): boolean {
   if (node.type === 2) {
     // expression
@@ -121,6 +191,12 @@ function isStatic(node: ASTNode): boolean {
   )
 }
 
+/**
+ * 判断一个节点是否是带有 `v-for` 指令的 `<template>` 标签的直接子节点。
+ *
+ * @param node - 要检查的 AST 节点。
+ * @returns 如果节点是带有 `v-for` 指令的 `<template>` 标签的直接子节点，则返回 `true`，否则返回 `false`。
+ */
 function isDirectChildOfTemplateFor(node: ASTElement): boolean {
   while (node.parent) {
     node = node.parent

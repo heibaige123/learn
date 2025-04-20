@@ -15,24 +15,110 @@ import { unicodeRegExp } from 'core/util/lang'
 import { ASTAttr, CompilerOptions } from 'types/compiler'
 
 // Regular Expressions for parsing tags and attributes
+/**
+ * 用于匹配 HTML 标签中的属性的正则表达式。
+ *
+ * - 第一个捕获组 `([^\s"'<>\/=]+)`：匹配属性名，不能包含空白字符、引号、尖括号、斜杠或等号。
+ * - 第二个捕获组 `(=)`：匹配等号，用于分隔属性名和属性值。
+ * - 第三个捕获组 `(?:"([^"]*)"+)`：匹配用双引号包裹的属性值。
+ * - 第四个捕获组 `|'([^']*)'+`：匹配用单引号包裹的属性值。
+ * - 第五个捕获组 `([^\s"'=<>`]+)`：匹配未用引号包裹的属性值，不能包含空白字符、引号、等号、尖括号或反引号。
+ *
+ * 该正则表达式用于解析 HTML 标签中的属性，支持多种属性值的表示形式。
+ */
 const attribute =
   /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+/**
+ * 用于匹配动态参数属性的正则表达式。
+ *
+ * - 第一个捕获组 `((?:v-[\w-]+:|@|:|#)\[[^=]+?\][^\s"'<>\/=]*)`：匹配动态参数的属性名，
+ *   包括 `v-` 指令、事件绑定（`@`）、绑定语法（`:`）或插槽（`#`），并且支持方括号包裹的动态参数。
+ * - 第二个捕获组 `(=)`：匹配等号，用于分隔属性名和属性值。
+ * - 第三个捕获组 `(?:"([^"]*)"+)`：匹配用双引号包裹的属性值。
+ * - 第四个捕获组 `|'([^']*)'+`：匹配用单引号包裹的属性值。
+ * - 第五个捕获组 `([^\s"'=<>`]+)`：匹配未用引号包裹的属性值，不能包含空白字符、引号、等号、尖括号或反引号。
+ *
+ * 该正则表达式用于解析带有动态参数的 HTML 属性。
+ */
 const dynamicArgAttribute =
   /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+?\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+/**
+ * 表示一个匹配 XML/HTML 标签名称的正则表达式。
+ * 标签名称必须以字母或下划线开头，可以包含连字符、点、数字、下划线、字母以及 Unicode 字符。
+ */
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`
+/**
+ * 捕获合格名称的正则表达式。
+ *
+ * - 第一个捕获组 `((?:${ncname}\\:)?${ncname})`：
+ *   匹配一个可选的命名空间前缀（由 `:` 分隔），
+ *   后跟一个标签名称。
+ *
+ * 该正则表达式用于解析 XML/HTML 标签的名称，
+ * 支持命名空间的语法。
+ */
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
+/**
+ * 用于匹配 HTML 起始标签的正则表达式。
+ *
+ * - 捕获组 `^<${qnameCapture}`：匹配以 `<` 开头的标签名称，
+ *   标签名称可以包含命名空间前缀（由 `:` 分隔）。
+ */
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
+/**
+ * 用于匹配 HTML 起始标签的结束部分的正则表达式。
+ *
+ * - 捕获组 `^\s*(\/?)>`：匹配可选的斜杠 `/`（表示自闭合标签），
+ *   后跟右尖括号 `>`。
+ */
 const startTagClose = /^\s*(\/?)>/
+/**
+ * 用于匹配 HTML 结束标签的正则表达式。
+ *
+ * - 捕获组 `^<\\/${qnameCapture}[^>]*>`：匹配以 `</` 开头的标签名称，
+ *   标签名称可以包含命名空间前缀（由 `:` 分隔），后跟任意非 `>` 的字符，直到 `>` 结束。
+ */
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
+/**
+ * 用于匹配 HTML 文档类型声明的正则表达式。
+ *
+ * - 匹配以 `<!DOCTYPE` 开头，后跟任意非 `>` 的字符，直到 `>` 结束。
+ * - 不区分大小写。
+ */
 const doctype = /^<!DOCTYPE [^>]+>/i
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
+/**
+ * 用于匹配 HTML 注释的正则表达式。
+ * 它以 `<!` 开头，后跟两个连字符 `--`。
+ */
 const comment = /^<!\--/
+/**
+ * 用于匹配条件注释的正则表达式。
+ * 条件注释是以 `<![` 开头的特殊注释，通常用于在 HTML 中为特定版本的 Internet Explorer 提供条件代码。
+ */
 const conditionalComment = /^<!\[/
 
 // Special Elements (can contain anything)
+/**
+ * 判断一个元素是否为纯文本元素。
+ * 纯文本元素包括：`<script>`、`<style>` 和 `<textarea>`。
+ *
+ * @constant
+ * @param {string} key - 要检查的元素标签名。
+ * @returns {boolean} 如果元素是纯文本元素，则返回 `true`，否则返回 `false`。
+ */
 export const isPlainTextElement = makeMap('script,style,textarea', true)
+/**
+ * 用于缓存正则表达式的对象。
+ * 键为正则表达式的字符串形式，值为对应的正则表达式实例。
+ * 通过缓存避免重复创建相同的正则表达式，提高性能。
+ */
 const reCache = {}
 
+/**
+ * 解码 HTML 实体的映射表。
+ * 键为 HTML 实体字符串，值为对应的解码字符。
+ */
 const decodingMap = {
   '&lt;': '<',
   '&gt;': '>',
@@ -42,20 +128,77 @@ const decodingMap = {
   '&#9;': '\t',
   '&#39;': "'"
 }
+/**
+ * 匹配 HTML 实体编码的正则表达式。
+ * 该正则用于匹配以下几种常见的 HTML 实体：
+ * - `&lt;` 表示小于号 `<`
+ * - `&gt;` 表示大于号 `>`
+ * - `&quot;` 表示双引号 `"`
+ * - `&amp;` 表示符号 `&`
+ * - `&#39;` 表示单引号 `'`
+ */
 const encodedAttr = /&(?:lt|gt|quot|amp|#39);/g
+/**
+ * 匹配 HTML 实体编码的正则表达式，包括换行符和制表符。
+ * 该正则用于匹配以下几种常见的 HTML 实体：
+ * - `&lt;` 表示小于号 `<`
+ * - `&gt;` 表示大于号 `>`
+ * - `&quot;` 表示双引号 `"`
+ * - `&amp;` 表示符号 `&`
+ * - `&#39;` 表示单引号 `'`
+ * - `&#10;` 表示换行符 `\n`
+ * - `&#9;` 表示制表符 `\t`
+ */
 const encodedAttrWithNewLines = /&(?:lt|gt|quot|amp|#39|#10|#9);/g
 
 // #5992
+/**
+ * 一个用于判断标签是否应忽略换行符的映射函数。
+ *
+ * 该函数通过 `makeMap` 创建，包含了需要忽略换行符的标签名称。
+ * 当前支持的标签包括 `pre` 和 `textarea`。
+ *
+ * @example
+ * isIgnoreNewlineTag('pre') // true
+ * isIgnoreNewlineTag('div') // false
+ */
 const isIgnoreNewlineTag = makeMap('pre,textarea', true)
+/**
+ * 判断是否应忽略 HTML 字符串中的第一个换行符。
+ *
+ * @param tag - HTML 标签名称。
+ * @param html - HTML 字符串。
+ * @returns 如果标签是忽略换行符的标签且 HTML 字符串以换行符开头，则返回 true；否则返回 false。
+ */
 const shouldIgnoreFirstNewline = (tag, html) =>
   tag && isIgnoreNewlineTag(tag) && html[0] === '\n'
 
+/**
+ * 解码 HTML 属性值的工具函数。
+ *
+ * @param value - 需要解码的字符串值。
+ * @param shouldDecodeNewlines - 一个布尔值，指示是否需要解码换行符。
+ *   - 如果为 `true`，则会解码换行符。
+ *   - 如果为 `false`，则不会解码换行符。
+ * @returns 解码后的字符串。
+ */
 function decodeAttr(value, shouldDecodeNewlines) {
   const re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr
   return value.replace(re, match => decodingMap[match])
 }
 
+/**
+ * HTML解析器的选项接口，继承自CompilerOptions。
+ */
 export interface HTMLParserOptions extends CompilerOptions {
+  /**
+   * 当解析到一个开始标签时的回调函数。
+   * @param tag 标签名称
+   * @param attrs 标签的属性数组
+   * @param unary 是否是自闭合标签
+   * @param start 标签的起始位置
+   * @param end 标签的结束位置
+   */
   start?: (
     tag: string,
     attrs: ASTAttr[],
@@ -63,8 +206,29 @@ export interface HTMLParserOptions extends CompilerOptions {
     start: number,
     end: number
   ) => void
+
+  /**
+   * 当解析到一个结束标签时的回调函数。
+   * @param tag 标签名称
+   * @param start 标签的起始位置
+   * @param end 标签的结束位置
+   */
   end?: (tag: string, start: number, end: number) => void
+
+  /**
+   * 当解析到文本内容时的回调函数。
+   * @param text 文本内容
+   * @param start 文本的起始位置（可选）
+   * @param end 文本的结束位置（可选）
+   */
   chars?: (text: string, start?: number, end?: number) => void
+
+  /**
+   * 当解析到注释内容时的回调函数。
+   * @param content 注释内容
+   * @param start 注释的起始位置
+   * @param end 注释的结束位置
+   */
   comment?: (content: string, start: number, end: number) => void
 }
 

@@ -137,7 +137,7 @@ export type ModuleOptions = {
 }
 
 /**
- * 表示 AST 修饰符的类型定义。
+ * AST 修饰符的类型定义。
  * 键是字符串类型，表示修饰符的名称。
  * 值是布尔类型，表示修饰符是否启用。
  */
@@ -153,6 +153,27 @@ export type ASTIfCondition = { exp: string | null; block: ASTElement }
  */
 export type ASTIfConditions = Array<ASTIfCondition>
 
+/**
+ * HTML 元素属性的抽象语法树节点类型
+ * @example
+
+      // id="app" 属性
+      {
+        name: "id",
+        value: "app",
+        start: 5,
+        end: 13
+      }
+
+      // :class="dynamicClass" 属性
+      {
+        name: "class",
+        value: "dynamicClass",
+        dynamic: true,
+        start: 14,
+        end: 34
+      }
+ */
 export type ASTAttr = {
   /**
    * 属性的名称
@@ -182,6 +203,15 @@ export type ASTAttr = {
 
 /**
  * 表示 AST 元素处理程序的类型定义
+ *
+ * @example
+    {
+      value: "handleClick($event, 'param')",
+      modifiers: { stop: true },
+      params: ["$event", "'param'"],
+      start: 15,
+      end: 48
+    }
  */
 export type ASTElementHandler = {
   /** 处理程序的值 */
@@ -206,6 +236,34 @@ export type ASTElementHandlers = {
   [key: string]: ASTElementHandler | Array<ASTElementHandler>
 }
 
+/**
+ *
+ * @example
+      <div v-if="isVisible">内容</div>
+      {
+        name: "if",
+        rawName: "v-if",
+        value: "isVisible",
+        arg: null,
+        isDynamicArg: false,
+        modifiers: null,
+        start: 5,
+        end: 22
+      }
+
+
+    <div v-bind:class="myClass">内容</div>
+      {
+        name: "bind",
+        rawName: "v-bind:class",
+        value: "myClass",
+        arg: "class",
+        isDynamicArg: false,
+        modifiers: null,
+        start: 5,
+        end: 27
+      }
+ */
 export type ASTDirective = {
   /**
    * 指令的名称，例如 v-if 中的 "if"
@@ -253,8 +311,9 @@ export type ASTDirective = {
  * 它可以是 ASTElement、ASTText 或 ASTExpression 类型之一。
  */
 export type ASTNode = ASTElement | ASTText | ASTExpression
+
 /**
- * 表示 AST 元素的类型定义
+ * AST 元素的类型定义
  */
 export type ASTElement = {
   /** 节点类型，固定为 1 */
