@@ -1,34 +1,72 @@
 import { PluginCreator, Rule, AtRule } from 'postcss'
 import selectorParser from 'postcss-selector-parser'
 
+/**
+ * 用于匹配 CSS 中的 `animation-name` 属性名称的正则表达式。
+ * 支持匹配带有前缀的 `animation-name`，例如 `-webkit-animation-name`。
+ */
 const animationNameRE = /^(-\w+-)?animation-name$/
+/**
+ * 用于匹配 CSS 动画属性名称的正则表达式。
+ * 支持匹配标准的 `animation` 属性以及带有前缀的动画属性（例如 `-webkit-animation`）。
+ */
 const animationRE = /^(-\w+-)?animation$/
 
+/**
+ * PostCSS 插件，用于处理 Vue SFC 的 scoped 样式。
+ * @param id - 作用域 ID，默认为空字符串。
+ */
 const scopedPlugin: PluginCreator<string> = (id = '') => {
+  /**
+   * 用于存储 keyframes 的映射表。
+   * 键为原始 keyframe 名称，值为带有作用域 ID 的 keyframe 名称。
+   */
   const keyframes = Object.create(null)
+
+  /**
+   * 从作用域 ID 中移除 `data-v-` 前缀，得到简短的 ID。
+   */
   const shortId = id.replace(/^data-v-/, '')
 
   return {
+    /**
+     * 插件名称。
+     */
     postcssPlugin: 'vue-sfc-scoped',
+
+    /**
+     * 处理每个 CSS 规则。
+     * @param rule - 当前的 CSS 规则。
+     */
     Rule(rule) {
       processRule(id, rule)
     },
+
+    /**
+     * 处理每个 CSS @规则。
+     * @param node - 当前的 @规则节点。
+     */
     AtRule(node) {
       if (
         /-?keyframes$/.test(node.name) &&
         !node.params.endsWith(`-${shortId}`)
       ) {
-        // register keyframes
+        // 注册 keyframes
         keyframes[node.params] = node.params = node.params + '-' + shortId
       }
     },
+
+    /**
+     * 在所有节点处理完成后执行。
+     * @param root - 当前的 CSS 根节点。
+     */
     OnceExit(root) {
       if (Object.keys(keyframes).length) {
-        // If keyframes are found in this <style>, find and rewrite animation names
-        // in declarations.
-        // Caveat: this only works for keyframes and animation rules in the same
-        // <style> element.
-        // individual animation-name declaration
+        // 如果在 <style> 中发现 keyframes，则查找并重写动画名称
+        // 在声明中。
+        // 注意：这仅适用于 keyframes 和动画规则在同一个
+        // <style> 元素中的情况。
+        // 单独的 animation-name 声明
         root.walkDecls(decl => {
           if (animationNameRE.test(decl.prop)) {
             decl.value = decl.value
@@ -36,7 +74,7 @@ const scopedPlugin: PluginCreator<string> = (id = '') => {
               .map(v => keyframes[v.trim()] || v.trim())
               .join(',')
           }
-          // shorthand
+          // 简写形式
           if (animationRE.test(decl.prop)) {
             decl.value = decl.value
               .split(',')
@@ -58,6 +96,10 @@ const scopedPlugin: PluginCreator<string> = (id = '') => {
   }
 }
 
+/**
+ * 一个用于存储已处理规则的弱引用集合。
+ * 通过 WeakSet 来避免内存泄漏，因为它不会阻止其包含的对象被垃圾回收。
+ */
 const processedRules = new WeakSet<Rule>()
 
 function processRule(id: string, rule: Rule) {
