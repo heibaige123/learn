@@ -1,14 +1,13 @@
 import { inBrowser } from './env'
 
 /**
- * 标记性能测量的函数或变量，用于记录性能相关的时间点。
- * 具体实现可能依赖于浏览器的性能 API 或其他工具。
+ * 性能标记（performance mark），用于记录性能相关的时间点
  */
-export let mark
+export let mark: (tag: string) => PerformanceMark
 /**
- * 用于性能测量的变量，可能会在运行时被赋值为具体的测量函数。
+ * 用于性能测量（performance measure）,用于记录性能测量的时间段，并清除相关的标记（marks）
  */
-export let measure
+export let measure: (name: string, startTag: string, endTag: string) => void
 
 if (__DEV__) {
   /**

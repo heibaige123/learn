@@ -4,8 +4,32 @@ import { urlToRequire } from './utils'
 import { TransformAssetUrlsOptions } from './assetUrl'
 import { ASTNode } from 'types/compiler'
 
+/**
+ * 表示 HTML 中 srcset 属性的每个候选项（image candidate）。
+ * 它在 Vue 模板编译器中被用来处理 <img> 或 <source> 标签的 srcset 属性，
+ * 将其解析为多个 require 调用
+ * @example
+```ts
+  {
+      type: 1,
+      tag: 'img',
+      attrs: [
+        {
+          name: 'srcset',
+          value: `require('./image1.jpg') + " 1x, " + require('./image2.jpg') + " 2x"`
+        }
+      ]
+  }
+```
+ */
 interface ImageCandidate {
+  /**
+   * 表示资源路径的 require 调用
+   */
   require: string
+  /**
+   * 表示资源的描述符（如 "1x", "2x", "100w" 等）
+   */
   descriptor: string
 }
 

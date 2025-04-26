@@ -3,6 +3,9 @@ import { DebuggerEvent } from 'v3/debug'
 import { SetupContext } from 'v3/apiSetup'
 import { Component } from './component'
 
+/**
+ * 描述 Vue 内部组件的选项配置。它是 Vue 内部实现的一部分，主要用于标识和处理内部组件的特殊选项。
+ */
 export type InternalComponentOptions = {
   /**
    * 表示组件是否为内部组件，固定为 true
@@ -317,6 +320,9 @@ export type ComponentOptions = {
   _base: typeof Component
 }
 
+/**
+ * 用于描述 Vue 组件中 `props` 的选项配置。
+ */
 export type PropOptions = {
   /**
    * 属性的类型，可以是一个函数、函数数组或 null。

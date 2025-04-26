@@ -2,8 +2,17 @@ import { isFunction, warn } from 'core/util'
 import { currentInstance } from './currentInstance'
 import type { Component } from 'types/component'
 
+/**
+ * 定义一个类型安全的注入键。
+ */
 export interface InjectionKey<T> extends Symbol {}
 
+/**
+ * 在当前组件中提供一个值，供后代组件通过 `inject` 获取。
+ * 数据通过键值对的形式存储，键可以是字符串、数字或 `InjectionKey`。
+ * @param key
+ * @param value
+ */
 export function provide<T>(key: InjectionKey<T> | string | number, value: T) {
   if (!currentInstance) {
     if (__DEV__) {
@@ -15,6 +24,11 @@ export function provide<T>(key: InjectionKey<T> | string | number, value: T) {
   }
 }
 
+/**
+ * 确保当前组件的 `_provided` 对象存在，并正确继承父组件的 `_provided` 对象。
+ * @param vm
+ * @returns
+ */
 export function resolveProvided(vm: Component): Record<string, any> {
   // by default an instance inherits its parent's provides object
   // but when it needs to provide values of its own, it creates its
@@ -30,6 +44,10 @@ export function resolveProvided(vm: Component): Record<string, any> {
   }
 }
 
+/**
+ *  在当前组件中获取祖先组件通过 `provide` 提供的值。
+ * @param key
+ */
 export function inject<T>(key: InjectionKey<T> | string): T | undefined
 export function inject<T>(
   key: InjectionKey<T> | string,

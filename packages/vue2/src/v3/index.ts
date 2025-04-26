@@ -2,6 +2,9 @@
  * Note: also update dist/vue.runtime.mjs when adding new exports to this file.
  */
 
+/**
+ * 一个占位符，会在构建过程中通过工具（如 Webpack、Rollup 或 Vite）替换为实际的版本号字符串，例如 `1.0.0`。
+ */
 export const version: string = '__VERSION__'
 
 export {

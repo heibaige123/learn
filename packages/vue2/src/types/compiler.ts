@@ -308,7 +308,6 @@ export type ASTDirective = {
 
 /**
  * ASTNode 类型表示抽象语法树中的节点。
- * 它可以是 ASTElement、ASTText 或 ASTExpression 类型之一。
  */
 export type ASTNode = ASTElement | ASTText | ASTExpression
 
