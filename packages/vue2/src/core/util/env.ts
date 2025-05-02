@@ -132,7 +132,7 @@ export function isNative(Ctor: any): boolean {
 }
 
 /**
- * 一个布尔值，用于检测当前环境是否支持 Symbol 和 Reflect.ownKeys。
+ * 当前环境是否支持 Symbol 和 Reflect.ownKeys。
  *
  * 如果支持，则 `hasSymbol` 为 `true`。
  */

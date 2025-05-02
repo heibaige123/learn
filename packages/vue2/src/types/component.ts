@@ -271,7 +271,10 @@ export declare class Component {
   /** 缓存的静态树 */
   _staticTrees?: Array<VNode> | null
 
-  /** 是否有钩子事件 */
+  /**
+   * - 是否有钩子事件
+   * - 用于优化生命周期钩子事件（如 `hook:mounted`）的触发效率。
+   */
   _hasHookEvent: boolean
 
   /** 提供给子组件的数据 */

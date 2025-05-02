@@ -1,6 +1,10 @@
 import type { GlobalAPI } from 'types/global-api'
 import { toArray, isFunction } from '../util/index'
 
+/**
+ * 向 Vue 构造函数添加 `use` 方法，该方法用于安装 Vue 插件
+ * @param Vue
+ */
 export function initUse(Vue: GlobalAPI) {
   Vue.use = function (plugin: Function | any) {
     const installedPlugins =

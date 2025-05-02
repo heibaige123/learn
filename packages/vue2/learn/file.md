@@ -23,3 +23,4 @@ data:[<mediatype>][;base64],<data>
   ```html
   <a href="data:text/plain;charset=utf-8,Hello%20World!">Download</a>
   ```
+

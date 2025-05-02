@@ -49,7 +49,7 @@ export function handleError(err: Error, vm: any, info: string) {
 }
 
 /**
- * 执行传入的函数并处理可能的错误。
+ * 安全地执行传入的函数，并捕获和处理可能发生的错误
  *
  * @param handler 要执行的函数
  * @param context 函数的执行上下文
