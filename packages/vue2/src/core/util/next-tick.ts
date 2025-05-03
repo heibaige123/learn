@@ -4,11 +4,25 @@ import { noop } from 'shared/util'
 import { handleError } from './error'
 import { isIE, isIOS, isNative } from './env'
 
+/**
+ * 标记当前环境下 nextTick 是否使用微任务(microtask)实现
+ */
 export let isUsingMicroTask = false
 
+/**
+ * 存储所有等待在下一个 tick 执行的回调函数
+ */
 const callbacks: Array<Function> = []
+
+/**
+ * 标记是否已经安排了一个刷新回调队列的任务
+ */
 let pending = false
 
+/**
+ * - 执行所有已登记的 nextTick 回调函数
+ * - 在异步任务（微任务或宏任务）触发时被调用
+ */
 function flushCallbacks() {
   pending = false
   const copies = callbacks.slice(0)
@@ -29,6 +43,35 @@ function flushCallbacks() {
 // where microtasks have too high a priority and fire in between supposedly
 // sequential events (e.g. #4521, #6690, which have workarounds)
 // or even between bubbling of the same event (#6566).
+
+/**
+- Vue 现在在所有场景下都使用微任务来处理异步更新
+
+### 历史变化
+- **Vue 2.5**：使用宏任务(macro tasks)结合微任务
+- **现在**：回归到全面使用微任务的策略
+
+## 放弃宏任务的原因
+
+1. **重绘时序问题**：
+   - 状态在重绘前改变时会出现微妙问题
+   - 例如：问题 #6813 中的 out-in 过渡动画异常
+
+2. **事件处理问题**：
+   - 在事件处理器中使用宏任务导致无法绕过的奇怪行为
+   - 涉及问题：#7109、#7153、#7546、#7834、#8109
+
+## 使用微任务的缺点
+
+尽管现在选择了微任务，但这种方案也有缺点：
+
+1. **优先级过高**：
+   - 微任务可能在本应连续的事件之间执行
+   - 相关问题：#4521、#6690（这些问题有解决方案）
+
+2. **事件冒泡干扰**：
+   - 甚至可能在同一事件的冒泡过程中触发（问题 #6566）
+ */
 let timerFunc
 
 // The nextTick behavior leverages the microtask queue, which can be accessed
@@ -47,6 +90,7 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
     // microtask queue but the queue isn't being flushed, until the browser
     // needs to do some other work, e.g. handle a timer. Therefore we can
     // "force" the microtask queue to be flushed by adding an empty timer.
+    // 在 iOS 上添加空的 setTimeout 强制刷新微任务队列
     if (isIOS) setTimeout(noop)
   }
   isUsingMicroTask = true
@@ -60,6 +104,7 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   // Use MutationObserver where native Promise is not available,
   // e.g. PhantomJS, iOS7, Android 4.4
   // (#6466 MutationObserver is unreliable in IE11)
+  // 通过修改文本节点内容触发回调
   let counter = 1
   const observer = new MutationObserver(flushCallbacks)
   const textNode = document.createTextNode(String(counter))
@@ -85,6 +130,9 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   }
 }
 
+/**
+ * 在下次 DOM 更新循环结束之后执行延迟回调
+ */
 export function nextTick(): Promise<void>
 export function nextTick<T>(this: T, cb: (this: T, ...args: any[]) => any): void
 export function nextTick<T>(cb: (this: T, ...args: any[]) => any, ctx: T): void

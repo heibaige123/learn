@@ -246,7 +246,8 @@ function genConfig(name) {
           compilerOptions: {
             // if targeting browser, target es5
             // if targeting node, es2017 means Node 8
-            target: isTargetingBrowser ? 'es5' : 'es2017'
+            // target: isTargetingBrowser ? 'es5' : 'es2017'
+            target: 'esnext'
           },
           include: isTargetingBrowser ? ['src'] : ['src', 'packages/*/src'],
           exclude: ['test', 'test-dts']

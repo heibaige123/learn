@@ -93,15 +93,16 @@ if (inBrowser) {
     window.addEventListener('test-passive', null as any, opts)
   } catch (e: any) {}
 }
+
+// this needs to be lazy-evaled because vue may be required before
+// vue-server-renderer can set VUE_ENV
+let _isServer
 /**
  * 检测当前代码是否运行在服务端渲染环境中。
  *
  * 如果 `_isServer` 未定义，则通过检测 `global.process.env.VUE_ENV` 是否为 `server` 来确定。
  * 如果运行在浏览器环境中，则返回 `false`。
  */
-// this needs to be lazy-evaled because vue may be required before
-// vue-server-renderer can set VUE_ENV
-let _isServer
 export const isServerRendering = () => {
   if (_isServer === undefined) {
     if (!inBrowser && typeof global !== 'undefined') {

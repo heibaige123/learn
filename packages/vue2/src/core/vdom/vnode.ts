@@ -32,9 +32,9 @@ export default class VNode {
   context?: Component // rendered in this component's scope
   /** 节点的唯一标识，用于优化虚拟 DOM 的 diff 算法。 */
   key: string | number | undefined
-  /** 如果是组件节点，则存储组件的选项信息。 */
+  /** 存储组件的选项信息。 */
   componentOptions?: VNodeComponentOptions
-  /** 如果是组件节点，则存储组件的实例。 */
+  /** 组件实例 */
   componentInstance?: Component // component instance
   /** 父虚拟节点。 */
   parent: VNode | undefined | null // component placeholder node

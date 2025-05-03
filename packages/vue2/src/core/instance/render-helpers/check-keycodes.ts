@@ -18,7 +18,6 @@ function generatedHandler(event) {
   return instance.submitForm(event); // 调用用户定义的方法
 }
 ```
-
  */
 
 import config from 'core/config'

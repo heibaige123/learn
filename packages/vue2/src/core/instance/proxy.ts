@@ -3,9 +3,14 @@
 import config from 'core/config'
 import { warn, makeMap, isNative } from '../util/index'
 
+/**
+ * Vue 2 在**开发环境**中提供的一个强大调试和警告机制，用于拦截组件渲染过程中的属性访问，
+ * 捕获常见错误并提供有用的警告。
+ */
 let initProxy
 
 if (__DEV__) {
+  /** 允许访问的全局变量列表 */
   const allowedGlobals = makeMap(
     'Infinity,undefined,NaN,isFinite,isNaN,' +
       'parseFloat,parseInt,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,' +
@@ -13,6 +18,7 @@ if (__DEV__) {
       'require' // for Webpack/Browserify
   )
 
+  /** 未定义属性警告函数 */
   const warnNonPresent = (target, key) => {
     warn(
       `Property or method "${key}" is not defined on the instance but ` +
@@ -24,6 +30,7 @@ if (__DEV__) {
     )
   }
 
+  /** 保留前缀警告函数 */
   const warnReservedPrefix = (target, key) => {
     warn(
       `Property "${key}" must be accessed with "$data.${key}" because ` +
@@ -34,8 +41,10 @@ if (__DEV__) {
     )
   }
 
+  /** 检测浏览器是否支持 Proxy */
   const hasProxy = typeof Proxy !== 'undefined' && isNative(Proxy)
 
+  // 特殊处理 keyCodes
   if (hasProxy) {
     const isBuiltInModifier = makeMap(
       'stop,prevent,self,ctrl,shift,alt,meta,exact'
@@ -55,6 +64,7 @@ if (__DEV__) {
     })
   }
 
+  /**  has 拦截器 - 用于 with 作用域中的属性检查 */
   const hasHandler = {
     has(target, key) {
       const has = key in target
@@ -71,6 +81,7 @@ if (__DEV__) {
     }
   }
 
+  /** get 拦截器 - 用于直接属性访问 */
   const getHandler = {
     get(target, key) {
       if (typeof key === 'string' && !(key in target)) {
@@ -81,14 +92,17 @@ if (__DEV__) {
     }
   }
 
+  /** 初始化代理 */
   initProxy = function initProxy(vm) {
     if (hasProxy) {
-      // determine which proxy handler to use
+      // 根据渲染函数类型选择不同的处理器
       const options = vm.$options
       const handlers =
         options.render && options.render._withStripped ? getHandler : hasHandler
+      // 创建渲染代理
       vm._renderProxy = new Proxy(vm, handlers)
     } else {
+      // 不支持 Proxy 的环境直接使用实例本身
       vm._renderProxy = vm
     }
   }

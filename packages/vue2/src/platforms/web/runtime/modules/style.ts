@@ -9,8 +9,16 @@ import {
 } from 'shared/util'
 import type { VNodeWithData } from 'types/vnode'
 
+// CSS 变量
 const cssVarRE = /^--/
 const importantRE = /\s*!important$/
+
+/**
+ * 给 DOM 元素设置单个样式属性
+ * @param el
+ * @param name
+ * @param val
+ */
 const setProp = (el, name, val) => {
   /* istanbul ignore if */
   if (cssVarRE.test(name)) {
@@ -39,6 +47,9 @@ const setProp = (el, name, val) => {
 const vendorNames = ['Webkit', 'Moz', 'ms']
 
 let emptyStyle
+/**
+ * 把样式属性名规范化为浏览器能识别的格式（比如加前缀）
+ */
 const normalize = cached(function (prop) {
   emptyStyle = emptyStyle || document.createElement('div').style
   prop = camelize(prop)
@@ -54,6 +65,12 @@ const normalize = cached(function (prop) {
   }
 })
 
+/**
+ * 对比新旧 VNode 的 style 数据，更新真实 DOM 元素的样式。
+ * @param oldVnode
+ * @param vnode
+ * @returns
+ */
 function updateStyle(oldVnode: VNodeWithData, vnode: VNodeWithData) {
   const data = vnode.data
   const oldData = oldVnode.data

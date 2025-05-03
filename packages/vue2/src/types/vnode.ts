@@ -66,7 +66,7 @@ export type VNodeWithData = VNode & {
   children: Array<VNode>
   /** 文本内容，始终为 void */
   text: void
-  /** 对应的 DOM 元素 */
+  /** 对应的真实 DOM 节点引用。 */
   elm: any
   /** 命名空间 */
   ns: string | void
@@ -76,7 +76,7 @@ export type VNodeWithData = VNode & {
   key: string | number | undefined
   /** 父节点 */
   parent?: VNodeWithData
-  /** 组件选项 */
+  /** 存储组件的选项信息。 */
   componentOptions?: VNodeComponentOptions
   /** 组件实例 */
   componentInstance?: Component

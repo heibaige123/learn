@@ -17,16 +17,30 @@ import {
 } from '../util/index'
 import { isReadonly, isRef, TrackOpTypes, TriggerOpTypes } from '../../v3'
 
+/**
+ * - 获取 `arrayMethods` 对象上的所有方法名
+ * - `arrayMethods` 是 Vue 中重写过的数组方法对象，包含 `push`、`pop`、`shift` 等方法
+ */
 const arrayKeys = Object.getOwnPropertyNames(arrayMethods)
 
+/**
+ * 一个特殊的空对象，用作标记值（sentinel value）
+ */
 const NO_INITIAL_VALUE = {}
 
 /**
  * In some cases we may want to disable observation inside a component's
  * update computation.
  */
+/**
+ * 控制 Vue 响应式系统是否应该将新遇到的对象转换为响应式对象的全局开关
+ */
 export let shouldObserve: boolean = true
 
+/**
+ * 临时控制 Vue 的响应式系统是否应该将新的对象转换为响应式对象
+ * @param value 控制是否启用观察者模式
+ */
 export function toggleObserving(value: boolean) {
   shouldObserve = value
 }

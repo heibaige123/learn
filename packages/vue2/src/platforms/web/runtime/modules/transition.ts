@@ -22,20 +22,33 @@ import {
 import type { VNodeWithData } from 'types/vnode'
 import VNode from 'core/vdom/vnode'
 
+/**
+ * 处理元素“进入”时的过渡动画
+ * @param vnode 需要执行过渡动画的虚拟节点（VNode），里面包含了 DOM 元素、过渡配置等信息。
+ * @param toggleDisplay 用于在 `v-show` 场景下切换元素的显示/隐藏（比如 `el.style.display = ''`）
+
+ - 添加/移除过渡相关的 class
+ - 调用用户自定义的钩子函数
+ - 监听动画/过渡结束事件
+ - 兼容 appear（初次渲染）和普通 enter（后续插入）两种场景
+ */
 export function enter(vnode: VNodeWithData, toggleDisplay?: () => void) {
   const el: any = vnode.elm
 
   // call leave callback now
+  // 清理上一次 leave 的回调
   if (isDef(el._leaveCb)) {
     el._leaveCb.cancelled = true
     el._leaveCb()
   }
 
+  // 解析过渡配置
   const data = resolveTransition(vnode.data.transition)
   if (isUndef(data)) {
     return
   }
 
+  // 防止重复 enter
   /* istanbul ignore if */
   if (isDef(el._enterCb) || el.nodeType !== 1) {
     return
@@ -166,25 +179,37 @@ export function enter(vnode: VNodeWithData, toggleDisplay?: () => void) {
   }
 }
 
+/**
+ * Vue 过渡动画系统中**处理元素离开（消失）动画**的核心实现
+ * @param vnode 需要执行离开（leave）过渡动画的虚拟节点（VNode），包含了 DOM 元素、过渡配置等信息。
+ * @param rm 当动画结束后需要调用的回调函数，通常用于从 DOM 中移除元素。
+
+ - 它会自动管理 class 的添加/移除、钩子的调用、动画结束的监听和 DOM 的最终移除。
+ - 支持 CSS 动画、JS 钩子、显式 duration、延迟 leave 等多种高级用法。
+ */
 export function leave(vnode: VNodeWithData, rm: Function) {
   const el: any = vnode.elm
 
+  // 1. 如果正在执行 enter 动画，先取消并执行 enter 回调
   // call enter callback now
   if (isDef(el._enterCb)) {
     el._enterCb.cancelled = true
     el._enterCb()
   }
 
+  // 2. 解析过渡配置
   const data = resolveTransition(vnode.data.transition)
   if (isUndef(data) || el.nodeType !== 1) {
     return rm()
   }
 
+  // 3. 如果已经有 leave 回调，直接返回，避免重复触发
   /* istanbul ignore if */
   if (isDef(el._leaveCb)) {
     return
   }
 
+  // 4. 解构出所有过渡相关的 class 和钩子
   const {
     css,
     type,
@@ -199,25 +224,32 @@ export function leave(vnode: VNodeWithData, rm: Function) {
     duration
   } = data
 
+  // 5. 判断是否需要 CSS 过渡，以及用户是否手动控制动画结束
   const expectsCSS = css !== false && !isIE9
   const userWantsControl = getHookArgumentsLength(leave)
 
+  // 6. 处理显式 duration
   const explicitLeaveDuration: any = toNumber(
     isObject(duration) ? duration.leave : duration
   )
 
+  // 7. 开发环境下检查 duration 合法性
   if (__DEV__ && isDef(explicitLeaveDuration)) {
     checkDuration(explicitLeaveDuration, 'leave', vnode)
   }
 
+  // 8. 定义动画结束后的回调，只会执行一次
   const cb = (el._leaveCb = once(() => {
+    // 清理 pending 记录
     if (el.parentNode && el.parentNode._pending) {
       el.parentNode._pending[vnode.key!] = null
     }
+    // 移除 class
     if (expectsCSS) {
       removeTransitionClass(el, leaveToClass)
       removeTransitionClass(el, leaveActiveClass)
     }
+    // 判断动画是否被取消
     // @ts-expect-error
     if (cb.cancelled) {
       if (expectsCSS) {
@@ -225,24 +257,25 @@ export function leave(vnode: VNodeWithData, rm: Function) {
       }
       leaveCancelled && leaveCancelled(el)
     } else {
-      rm()
+      rm() // 真正移除元素
       afterLeave && afterLeave(el)
     }
     el._leaveCb = null
   }))
-
+  // 9. 支持延迟 leave
   if (delayLeave) {
     delayLeave(performLeave)
   } else {
     performLeave()
   }
-
+  // 10. 真正执行离开动画的函数
   function performLeave() {
     // the delayed leave may have already been cancelled
     // @ts-expect-error
     if (cb.cancelled) {
       return
     }
+    // 记录 pending，防止同一元素多次 leave
     // record leaving element
     if (!vnode.data.show && el.parentNode) {
       ;(el.parentNode._pending || (el.parentNode._pending = {}))[vnode.key!] =
@@ -275,6 +308,12 @@ export function leave(vnode: VNodeWithData, rm: Function) {
 }
 
 // only used in dev mode
+/**
+ * 这个函数**只在开发环境下使用**，用于检查 `<transition>` 组件里显式指定的 duration 是否有效
+ * @param val 需要检查的过渡时长（duration）
+ * @param name 表示当前检查的是哪种过渡时长，比如 `'enter'` 或 `'leave'`，用于提示信息
+ * @param vnode 当前的虚拟节点（VNode），用于获取上下文（比如报错时可以定位到具体组件）
+ */
 function checkDuration(val, name, vnode) {
   if (typeof val !== 'number') {
     warn(
@@ -291,6 +330,20 @@ function checkDuration(val, name, vnode) {
   }
 }
 
+/**
+ * 用于**判断一个值是否是有效的数字**，常用于校验过渡动画的 duration（时长）参数
+ * @param val 需要检查的值，理论上应该是一个数字（通常用于过渡动画的 duration）
+
+ ## 举例
+
+ ```js
+ isValidDuration(300)      // true
+ isValidDuration('300')    // false
+ isValidDuration(NaN)      // false
+ isValidDuration(undefined)// false
+ isValidDuration(null)     // false
+ ```
+ */
 function isValidDuration(val) {
   return typeof val === 'number' && !isNaN(val)
 }
@@ -300,6 +353,13 @@ function isValidDuration(val) {
  * - a merged hook (invoker) with the original in .fns
  * - a wrapped component method (check ._length)
  * - a plain function (.length)
+ */
+/**
+ * 用于**判断过渡钩子函数是否声明了第二个参数**（即回调函数 `done`）
+ * @param fn 需要检测的函数，通常是过渡钩子（如 enter、leave、appear 等），也可能是被 Vue 包装过的 invoker 函数
+
+ - 在 Vue 过渡动画中，如果钩子函数有第二个参数，说明用户想手动控制动画结束时机（比如异步动画），Vue 就不会自动结束动画，而是等你手动调用 `done`。
+ - 如果没有第二个参数，Vue 会自动监听 CSS 动画/过渡事件来判断动画结束。
  */
 function getHookArgumentsLength(fn: Function): boolean {
   if (isUndef(fn)) {
@@ -318,6 +378,12 @@ function getHookArgumentsLength(fn: Function): boolean {
   }
 }
 
+/**
+ * 在节点插入或激活时，自动触发 enter 过渡动画
+ * 但如果是 `v-show` 场景则跳过（因为 `v-show` 的显示切换由别的逻辑处理）。
+ * @param _
+ * @param vnode 当前需要处理的虚拟节点（VNode），包含了元素、数据、过渡配置等信息
+ */
 function _enter(_: any, vnode: VNodeWithData) {
   if (vnode.data.show !== true) {
     enter(vnode)

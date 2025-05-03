@@ -325,7 +325,6 @@ export function cached<R>(fn: (str: string) => R): (sr: string) => R {
 const camelizeRE = /-(\w)/g
 /**
  * 将连字符分隔的字符串转换为驼峰命名法的字符串。
- * 使用缓存以提高性能。
  *
  * @param str - 输入的连字符分隔的字符串。
  * @returns 转换为驼峰命名法的字符串。
@@ -403,7 +402,6 @@ function polyfillBind(fn: Function, ctx: Object): Function {
 function nativeBind(fn: Function, ctx: Object): Function {
   return fn.bind(ctx)
 }
-
 
 /**
  * `bind` 是一个函数引用，根据环境选择使用原生的 `Function.prototype.bind` 方法，

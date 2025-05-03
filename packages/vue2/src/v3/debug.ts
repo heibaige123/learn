@@ -6,13 +6,13 @@ import { TrackOpTypes, TriggerOpTypes } from './reactivity/operations'
  */
 export interface DebuggerOptions {
   /**
-   * 在依赖被收集时触发。
+   * 当依赖被追踪时的回调（仅开发环境）。
    * @param event
    * @returns
    */
   onTrack?: (event: DebuggerEvent) => void
   /**
-   * 在依赖被触发更新时触发。
+   * 当 watcher 被触发时的回调（仅开发环境）。
    * @param event
    * @returns
    */

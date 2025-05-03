@@ -16,7 +16,9 @@ import { bindDynamicKeys, prependModifier } from './bind-dynamic-keys'
  * @param target
  */
 export function installRenderHelpers(target: any) {
+  // v-once
   target._o = markOnce
+  // 转数字
   target._n = toNumber
   // toString，字符串化
   target._s = toString
@@ -24,9 +26,9 @@ export function installRenderHelpers(target: any) {
   target._l = renderList
   // 插槽渲染
   target._t = renderSlot
-  // looseEqual 判断
+  // 宽松相等判断
   target._q = looseEqual
-  // looseIndexOf
+  // 宽松 indexOf
   target._i = looseIndexOf
   // 静态树渲染
   target._m = renderStatic
@@ -40,9 +42,12 @@ export function installRenderHelpers(target: any) {
   target._v = createTextVNode
   // 创建空节点
   target._e = createEmptyVNode
-  // resolveScopedSlots
+  // 作用域插槽
   target._u = resolveScopedSlots
+  // v-on 合并事件
   target._g = bindObjectListeners
+  // 动态 v-bind
   target._d = bindDynamicKeys
+  // 修饰符处理
   target._p = prependModifier
 }
