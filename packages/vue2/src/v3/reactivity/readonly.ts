@@ -49,11 +49,6 @@ export type DeepReadonly<T> =
     : // 如果 T 是其他类型，则直接将其标记为只读
       Readonly<T>
 
-/** 用作 Vue 响应式系统内部的特殊属性键 (flag/标记)。 */
-const rawToReadonlyFlag = `__v_rawToReadonly`
-/** 从原始对象映射到其对应的浅只读代理的标识符/键。 */
-const rawToShallowReadonlyFlag = `__v_rawToShallowReadonly`
-
 /**
  * 创建一个对象的深层只读（deep readonly）代理。
  * 该代理会递归地将目标对象及其所有嵌套属性都变为只读，禁止任何修改操作。
@@ -106,7 +101,9 @@ function createReadonly(target: any, shallow: boolean) {
 
   // already has a readonly proxy
   // 如果对象已经有只读代理，直接返回缓存的代理
-  const existingFlag = shallow ? rawToShallowReadonlyFlag : rawToReadonlyFlag
+  const existingFlag = shallow
+    ? `__v_rawToShallowReadonly`
+    : `__v_rawToReadonly`
   const existingProxy = target[existingFlag]
   if (existingProxy) {
     return existingProxy
@@ -131,9 +128,10 @@ function createReadonly(target: any, shallow: boolean) {
 
   // 遍历目标对象的所有自有属性，为每个属性定义只读访问器
   const keys = Object.keys(target)
-  for (let i = 0; i < keys.length; i++) {
-    defineReadonlyProperty(proxy, target, keys[i], shallow)
-  }
+
+  keys.forEach(key => {
+    defineReadonlyProperty(proxy, target, key, shallow)
+  })
 
   return proxy as any
 }

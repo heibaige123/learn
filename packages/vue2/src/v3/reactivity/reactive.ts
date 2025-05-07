@@ -17,13 +17,7 @@
 */
 
 import { observe, Observer } from 'core/observer'
-import {
-  def,
-  isPrimitive,
-  warn,
-  toRawType,
-  isServerRendering
-} from 'core/util'
+import { def, isPrimitive, warn, toRawType, isServerRendering } from 'core/util'
 import type { Ref, UnwrapRefSimple, RawSymbol } from './ref'
 
 /**
@@ -202,7 +196,7 @@ export function isShallow(value: unknown): boolean {
  * @returns
  */
 export function isReadonly(value: unknown): boolean {
-  return !!(value && (value as Target).__v_isReadonly)
+  return !!(value as Target)?.__v_isReadonly
 }
 
 /**
@@ -221,7 +215,7 @@ export function isProxy(value: unknown): boolean {
  * @returns
  */
 export function toRaw<T>(observed: T): T {
-  const raw = observed && (observed as Target)[ReactiveFlags.RAW]
+  const raw = (observed as Target)?.[ReactiveFlags.RAW]
   return raw ? toRaw(raw) : observed
 }
 

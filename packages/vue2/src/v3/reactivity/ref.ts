@@ -64,7 +64,7 @@ export interface Ref<T = any> {
  */
 export function isRef<T>(r: Ref<T> | unknown): r is Ref<T>
 export function isRef(r: any): r is Ref {
-  return !!(r && (r as Ref).__v_isRef === true)
+  return !!((r as Ref)?.__v_isRef === true)
 }
 
 /**
@@ -86,7 +86,9 @@ declare const ShallowRefMarker: unique symbol
 /**
  * 继承了 `Ref` 的所有特性，并通过 `ShallowRefMarker` 标记为浅层响应式。
  */
-export type ShallowRef<T = any> = Ref<T> & { [ShallowRefMarker]?: true }
+export type ShallowRef<T = any> = Ref<T> & {
+  [ShallowRefMarker]?: true
+}
 
 /**
  * 创建一个浅层响应式的 `Ref` 对象。
@@ -134,14 +136,13 @@ export function triggerRef(ref: Ref) {
     warn(`received object is not a triggerable ref.`)
   }
   if (__DEV__) {
-    ref.dep &&
-      ref.dep.notify({
-        type: TriggerOpTypes.SET,
-        target: ref,
-        key: 'value'
-      })
+    ref.dep?.notify({
+      type: TriggerOpTypes.SET,
+      target: ref,
+      key: 'value'
+    })
   } else {
-    ref.dep && ref.dep.notify()
+    ref.dep?.notify()
   }
 }
 
@@ -170,9 +171,11 @@ export function proxyRefs<T extends object>(
   }
   const proxy = {}
   const keys = Object.keys(objectWithRefs)
-  for (let i = 0; i < keys.length; i++) {
-    proxyWithRefUnwrap(proxy, objectWithRefs, keys[i])
-  }
+
+  keys.forEach(key => {
+    proxyWithRefUnwrap(proxy, objectWithRefs, key)
+  })
+
   return proxy as any
 }
 
@@ -195,8 +198,10 @@ export function proxyWithRefUnwrap(
       if (isRef(val)) {
         return val.value
       } else {
-        const ob = val && val.__ob__
-        if (ob) ob.dep.depend()
+        const ob = val?.__ob__
+        if (ob) {
+          ob.dep.depend()
+        }
         return val
       }
     },
@@ -290,6 +295,7 @@ export function toRefs<T extends object>(object: T): ToRefs<T> {
     warn(`toRefs() expects a reactive object but received a plain one.`)
   }
   const ret: any = Array.isArray(object) ? new Array(object.length) : {}
+
   for (const key in object) {
     ret[key] = toRef(object, key)
   }

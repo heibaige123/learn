@@ -144,8 +144,7 @@ export function defineReactive(
   val?: any,
   customSetter?: Function | null,
   shallow?: boolean,
-  mock?: boolean,
-  observeEvenIfShallow = false
+  mock?: boolean
 ) {
   const dep = new Dep()
 
@@ -340,13 +339,12 @@ export function del(target: any[] | object, key: any) {
  * we cannot intercept array element access like property getters.
  */
 function dependArray(value: Array<any>) {
-  for (let e, i = 0, l = value.length; i < l; i++) {
-    e = value[i]
+  value.forEach(e => {
     if (e && e.__ob__) {
       e.__ob__.dep.depend()
     }
     if (Array.isArray(e)) {
       dependArray(e)
     }
-  }
+  })
 }

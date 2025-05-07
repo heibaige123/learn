@@ -634,9 +634,5 @@ export function once<T extends (...args: any[]) => any>(fn: T): T {
  * @returns 如果两个值不同，返回 true；否则返回 false
  */
 export function hasChanged(x: unknown, y: unknown): boolean {
-  if (x === y) {
-    return x === 0 && 1 / x !== 1 / (y as number)
-  } else {
-    return x === x || y === y
-  }
+  return Object.is(x, y)
 }

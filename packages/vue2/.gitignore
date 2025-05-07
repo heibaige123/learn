@@ -14,4 +14,4 @@ packages/template-compiler/browser.js
 .vscode
 dist
 temp
-types/v3-generated.d.ts
+# types/v3-generated.d.ts
