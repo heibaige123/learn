@@ -7,9 +7,22 @@ let warn
 
 // in some cases, the event used has to be determined at runtime
 // so we used some reserved tokens during compile.
+/**
+ * 用于range类型输入框的特殊标记
+ */
 export const RANGE_TOKEN = '__r'
+/**
+ * 用于checkbox和radio类型输入框的特殊标记
+ */
 export const CHECKBOX_RADIO_TOKEN = '__c'
 
+/**
+ * 处理v-model指令的主要函数
+ * @param {ASTElement} el - 抽象语法树元素节点
+ * @param {ASTDirective} dir - 指令对象，包含v-model的相关信息
+ * @param {Function} _warn - 警告函数，用于在开发环境中发出警告
+ * @returns {boolean | undefined} - 返回true表示需要在运行时处理该指令，false表示不需要
+ */
 export default function model(
   el: ASTElement,
   dir: ASTDirective,
@@ -63,6 +76,12 @@ export default function model(
   return true
 }
 
+/**
+ * 为复选框元素生成v-model相关代码
+ * @param {ASTElement} el - 抽象语法树元素节点
+ * @param {string} value - v-model绑定的表达式值
+ * @param {ASTModifiers | null} modifiers - 修饰符对象，如.number等
+ */
 function genCheckboxModel(
   el: ASTElement,
   value: string,
@@ -104,6 +123,12 @@ function genCheckboxModel(
   )
 }
 
+/**
+ * 为单选按钮元素生成v-model相关代码
+ * @param {ASTElement} el - 抽象语法树元素节点
+ * @param {string} value - v-model绑定的表达式值
+ * @param {ASTModifiers | null} modifiers - 修饰符对象，如.number等
+ */
 function genRadioModel(
   el: ASTElement,
   value: string,
@@ -116,34 +141,56 @@ function genRadioModel(
   addHandler(el, 'change', genAssignmentCode(value, valueBinding), null, true)
 }
 
+/**
+ * 为select元素生成v-model相关代码
+ * @param {ASTElement} el - 抽象语法树元素节点
+ * @param {string} value - v-model绑定的表达式值
+ * @param {ASTModifiers | null} modifiers - 修饰符对象，如.number等
+ */
 function genSelect(
   el: ASTElement,
   value: string,
   modifiers?: ASTModifiers | null
 ) {
   const number = modifiers && modifiers.number
-  const selectedVal =
-    `Array.prototype.filter` +
-    `.call($event.target.options,function(o){return o.selected})` +
-    `.map(function(o){var val = "_value" in o ? o._value : o.value;` +
-    `return ${number ? '_n(val)' : 'val'}})`
+  const selectedVal = `
+      Array.prototype.filter
+        .call($event.target.options, function(o) {
+          return o.selected
+        })
+        .map(function(o) {
+          var val = "_value" in o
+            ? o._value
+            : o.value;
+          return ${number ? '_n(val)' : 'val'}
+        })`
 
-  const assignment = '$event.target.multiple ? $$selectedVal : $$selectedVal[0]'
   let code = `var $$selectedVal = ${selectedVal};`
+  const assignment = '$event.target.multiple ? $$selectedVal : $$selectedVal[0]'
   code = `${code} ${genAssignmentCode(value, assignment)}`
   addHandler(el, 'change', code, null, true)
 }
 
+/**
+ * 为默认输入元素(input和textarea)生成v-model相关代码
+ * @param {ASTElement} el - 抽象语法树元素节点
+ * @param {string} value - v-model绑定的表达式值
+ * @param {ASTModifiers | null} modifiers - 修饰符对象，如.lazy、.number、.trim等
+ * @returns {boolean | void} - 函数执行结果
+ */
 function genDefaultModel(
   el: ASTElement,
   value: string,
   modifiers?: ASTModifiers | null
 ): boolean | void {
+  // 获取输入元素的type属性值（如text、number、password等）
   const type = el.attrsMap.type
 
   // warn if v-bind:value conflicts with v-model
   // except for inputs with v-bind:type
   if (__DEV__) {
+    // 检查是否同时使用了`:value`(或`v-bind:value`)和`v-model`
+    // `v-model`内部已经包含了对value的绑定，再额外添加`:value`会造成冲突
     const value = el.attrsMap['v-bind:value'] || el.attrsMap[':value']
     const typeBinding = el.attrsMap['v-bind:type'] || el.attrsMap[':type']
     if (value && !typeBinding) {
@@ -156,8 +203,17 @@ function genDefaultModel(
     }
   }
 
+  // - **lazy**: 懒更新，使用change事件而非input事件
+  // - **number**: 将输入值转换为数字类型
+  // - **trim**: 自动去除输入值的首尾空格
   const { lazy, number, trim } = modifiers || {}
+  // 决定是否需要添加中文输入法(IME)组合输入保护
   const needCompositionGuard = !lazy && type !== 'range'
+  // - **作用**：确定使用哪种事件来更新数据
+  // - **三种情况**：
+  //   - 使用了`.lazy`修饰符：使用`change`事件（失焦或按回车时触发）
+  //   - 输入类型是`range`：使用特殊标记`RANGE_TOKEN`（即`__r`）
+  //   - 其他情况：使用`input`事件（即时更新）
   const event = lazy ? 'change' : type === 'range' ? RANGE_TOKEN : 'input'
 
   let valueExpression = '$event.target.value'
@@ -176,6 +232,7 @@ function genDefaultModel(
   addProp(el, 'value', `(${value})`)
   addHandler(el, event, code, null, true)
   if (trim || number) {
+    // 强制更新视图，确保在失焦时应用修饰符效果
     addHandler(el, 'blur', '$forceUpdate()')
   }
 }

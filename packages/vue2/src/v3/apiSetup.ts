@@ -16,23 +16,37 @@ import { proxyWithRefUnwrap } from './reactivity/ref'
 
 /**
  * @internal
+ * SetupContext 接口定义，用于 setup 函数的第二个参数。
  */
 export interface SetupContext {
+  // 组件的 $attrs 代理对象，包含父作用域传递但未被 props 接收的属性
   attrs: Record<string, any>
+  // 组件的 $listeners 代理对象，包含父作用域传递的事件监听器
   listeners: Record<string, Function | Function[]>
+  // 组件的插槽对象，键为插槽名，值为返回 VNode 数组的函数
   slots: Record<string, () => VNode[]>
+  // 触发自定义事件的方法
   emit: (event: string, ...args: any[]) => any
+  // 暴露给父组件的属性或方法
   expose: (exposed: Record<string, any>) => void
 }
 
+/**
+ * 初始化 setup 相关逻辑。
+ * 如果组件定义了 setup 函数，则调用 setup，并根据返回值处理 render 或绑定。
+ * @param vm 组件实例
+ */
 export function initSetup(vm: Component) {
   const options = vm.$options
   const setup = options.setup
   if (setup) {
+    // 创建 setup 上下文对象（第二个参数）
     const ctx = (vm._setupContext = createSetupContext(vm))
 
+    // 设置当前激活实例，进入依赖收集环境
     setCurrentInstance(vm)
     pushTarget()
+    // 调用 setup 函数，传入 props 和 setup context
     const setupResult = invokeWithErrorHandling(
       setup,
       null,
@@ -43,12 +57,14 @@ export function initSetup(vm: Component) {
     popTarget()
     setCurrentInstance()
 
+    // 如果 setup 返回的是函数，则作为 render 函数
     if (isFunction(setupResult)) {
-      // render function
       // @ts-ignore
       options.render = setupResult
-    } else if (isObject(setupResult)) {
-      // bindings
+    }
+    // 如果 setup 返回的是对象，则作为绑定数据
+    else if (isObject(setupResult)) {
+      // 开发环境下，setup 不应直接返回 VNode
       if (__DEV__ && setupResult instanceof VNode) {
         warn(
           `setup() should not return VNodes directly - ` +
@@ -56,8 +72,9 @@ export function initSetup(vm: Component) {
         )
       }
       vm._setupState = setupResult
-      // __sfc indicates compiled bindings from <script setup>
+      // __sfc 标记表示 <script setup> 编译产物
       if (!setupResult.__sfc) {
+        // 普通 setup 返回对象，代理到 vm 上
         for (const key in setupResult) {
           if (!isReserved(key)) {
             proxyWithRefUnwrap(vm, setupResult, key)
@@ -66,7 +83,7 @@ export function initSetup(vm: Component) {
           }
         }
       } else {
-        // exposed for compiled render fn
+        // <script setup> 编译产物，代理到 _setupProxy 上
         const proxy = (vm._setupProxy = {})
         for (const key in setupResult) {
           if (key !== '__sfc') {
@@ -74,7 +91,9 @@ export function initSetup(vm: Component) {
           }
         }
       }
-    } else if (__DEV__ && setupResult !== undefined) {
+    }
+    // 如果 setup 返回了非对象非函数，开发环境下警告
+    else if (__DEV__ && setupResult !== undefined) {
       warn(
         `setup() should return an object. Received: ${
           setupResult === null ? 'null' : typeof setupResult
@@ -84,9 +103,15 @@ export function initSetup(vm: Component) {
   }
 }
 
+/**
+ * 创建 setup context 对象，作为 setup 函数的第二个参数。
+ * @param vm 组件实例
+ * @returns SetupContext 对象
+ */
 function createSetupContext(vm: Component): SetupContext {
-  let exposeCalled = false
+  let exposeCalled = false // 标记 expose 是否已调用
   return {
+    // attrs 代理，自动同步 $attrs
     get attrs() {
       if (!vm._attrsProxy) {
         const proxy = (vm._attrsProxy = {})
@@ -95,6 +120,7 @@ function createSetupContext(vm: Component): SetupContext {
       }
       return vm._attrsProxy
     },
+    // listeners 代理，自动同步 $listeners
     get listeners() {
       if (!vm._listenersProxy) {
         const proxy = (vm._listenersProxy = {})
@@ -102,10 +128,13 @@ function createSetupContext(vm: Component): SetupContext {
       }
       return vm._listenersProxy
     },
+    // slots 代理，返回插槽代理对象
     get slots() {
       return initSlotsProxy(vm)
     },
+    // emit 方法，绑定到当前组件实例
     emit: bind(vm.$emit, vm) as any,
+    // expose 方法，允许 setup 暴露属性/方法给父组件
     expose(exposed?: Record<string, any>) {
       if (__DEV__) {
         if (exposeCalled) {
@@ -217,18 +246,23 @@ export function syncSetupSlots(to: any, from: any) {
     }
   }
 }
-
 /**
- * @internal use manual type def because public setup context type relies on
- * legacy VNode types
+ * @internal
+ * 获取当前组件的 slots（插槽）对象。
+ * 由于公共的 setup context 类型依赖于旧版 VNode 类型，这里手动指定返回类型。
+ *
+ * @returns 当前组件的 slots 代理对象（SetupContext['slots']）
  */
 export function useSlots(): SetupContext['slots'] {
   return getContext().slots
 }
 
 /**
- * @internal use manual type def because public setup context type relies on
- * legacy VNode types
+ * @internal
+ * 获取当前组件的 attrs（非 props 属性）对象。
+ * 由于公共的 setup context 类型依赖于旧版 VNode 类型，这里手动指定返回类型。
+ *
+ * @returns 当前组件的 attrs 代理对象（SetupContext['attrs']）
  */
 export function useAttrs(): SetupContext['attrs'] {
   return getContext().attrs
@@ -236,51 +270,68 @@ export function useAttrs(): SetupContext['attrs'] {
 
 /**
  * Vue 2 only
- * @internal use manual type def because public setup context type relies on
- * legacy VNode types
+ * @internal
+ * 获取当前组件的 listeners（事件监听器）对象。
+ * 由于公共的 setup context 类型依赖于旧版 VNode 类型，这里手动指定返回类型。
+ *
+ * @returns 当前组件的 listeners 代理对象（SetupContext['listeners']）
  */
 export function useListeners(): SetupContext['listeners'] {
   return getContext().listeners
 }
-
 /**
- * 获取当前 Vue 组件实例的 setup 上下文对象，这个上下文对象包含了组件的 attrs、slots、emit 等属性，供组合式 API 使用。
- * @returns 组合式 API 的上下文对象，包含 `attrs`、`slots`、`emit` 等属性，用于在 `setup` 函数中提供除 props 外的其他组件功能。
+ * 获取当前 Vue 组件实例的 setup 上下文对象。
+ * 该上下文对象包含 attrs、slots、emit 等属性，供组合式 API 使用。
+ *
+ * @returns SetupContext 组合式 API 的上下文对象，包含 attrs、slots、emit 等属性，
+ *          用于在 setup 函数中提供除 props 外的其他组件功能。
  */
 function getContext(): SetupContext {
+  // 如果没有当前激活的组件实例，开发环境下给出警告
   if (__DEV__ && !currentInstance) {
     warn(`useContext() called without active instance.`)
   }
+  // 获取当前组件实例
   const vm = currentInstance!
+  // 如果 _setupContext 已存在则直接返回，否则创建新的 setupContext
   return vm._setupContext || (vm._setupContext = createSetupContext(vm))
 }
 
 /**
- * Runtime helper for merging default declarations. Imported by compiled code
- * only.
- * @internal
+ * 运行时辅助函数，用于合并 props 的默认值声明。
+ * 仅供编译后的代码导入使用。
+ *
+ * @param raw      原始 props 声明，可以是字符串数组或 props 对象
+ * @param defaults 默认值对象，key 为 prop 名，value 为默认值
+ * @returns        合并后的 props 对象，每个 prop 都带有 default 属性
  */
 export function mergeDefaults(
   raw: string[] | Record<string, PropOptions>,
   defaults: Record<string, any>
 ): Record<string, PropOptions> {
+  // 如果 raw 是数组，则将其转换为对象格式，每个 prop 都初始化为空对象
   const props = isArray(raw)
     ? raw.reduce(
         (normalized, p) => ((normalized[p] = {}), normalized),
         {} as Record<string, PropOptions>
       )
     : raw
+  // 遍历 defaults，将默认值合并到 props 对象中
   for (const key in defaults) {
     const opt = props[key]
     if (opt) {
+      // 如果 opt 是数组或函数，说明是类型声明，需要包装成对象
       if (isArray(opt) || isFunction(opt)) {
         props[key] = { type: opt, default: defaults[key] }
       } else {
+        // 否则直接在原有对象上添加 default 属性
         opt.default = defaults[key]
       }
     } else if (opt === null) {
+      // 如果 opt 为 null，也创建一个带 default 的对象
       props[key] = { default: defaults[key] }
     } else if (__DEV__) {
+      // 如果没有对应的 prop 声明，开发环境下给出警告
       warn(`props default key "${key}" has no corresponding declaration.`)
     }
   }

@@ -88,7 +88,13 @@ export { useCssModule } from './sfc-helpers/useCssModule'
 export { useCssVars } from './sfc-helpers/useCssVars'
 
 /**
- * @internal type is manually declared in <root>/types/v3-define-component.d.ts
+ * @internal
+ * 该类型在 <root>/types/v3-define-component.d.ts 中手动声明。
+ *
+ * 用于定义一个组件。主要用于类型推导和语义标记，实际运行时只是原样返回 options。
+ *
+ * @param options 组件的选项对象（如 data、props、setup、render 等）
+ * @returns       返回传入的 options 对象本身
  */
 export function defineComponent(options: any) {
   return options

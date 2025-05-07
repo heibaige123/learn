@@ -13,6 +13,10 @@ import type { VNodeWithData } from 'types/vnode'
 // it's important to place the event as the first in the array because
 // the whole point is ensuring the v-model callback gets called before
 // user-attached handlers.
+/**
+ * normalizeEvents函数 - 规范化只能在运行时确定的v-model事件标记
+ * @param {Object} on - 事件监听器对象
+ */
 function normalizeEvents(on) {
   /* istanbul ignore if */
   if (isDef(on[RANGE_TOKEN])) {
@@ -32,6 +36,13 @@ function normalizeEvents(on) {
 
 let target: any
 
+/**
+ * createOnceHandler函数 - 创建只执行一次的事件处理函数
+ * @param {string} event - 事件名称
+ * @param {Function} handler - 原始处理函数
+ * @param {boolean} capture - 是否在捕获阶段执行
+ * @returns {Function} - 包装后的一次性处理函数
+ */
 function createOnceHandler(event, handler, capture) {
   const _target = target // save current target element in closure
   return function onceHandler() {
@@ -47,6 +58,13 @@ function createOnceHandler(event, handler, capture) {
 // safe to exclude.
 const useMicrotaskFix = isUsingMicroTask && !(isFF && Number(isFF[1]) <= 53)
 
+/**
+ * add函数 - 添加DOM事件监听器，包含微任务修复
+ * @param {string} name - 事件名称
+ * @param {Function} handler - 事件处理函数
+ * @param {boolean} capture - 是否捕获阶段
+ * @param {boolean} passive - 是否被动模式
+ */
 function add(
   name: string,
   handler: Function,
@@ -91,6 +109,13 @@ function add(
   )
 }
 
+/**
+ * remove函数 - 移除DOM事件监听器
+ * @param {string} name - 事件名称
+ * @param {Function} handler - 事件处理函数
+ * @param {boolean} capture - 是否捕获阶段
+ * @param {HTMLElement} _target - 可选的目标元素
+ */
 function remove(
   name: string,
   handler: Function,
@@ -105,6 +130,11 @@ function remove(
   )
 }
 
+/**
+ * updateDOMListeners函数 - 更新DOM元素的事件监听器
+ * @param {VNodeWithData} oldVnode - 旧的虚拟节点
+ * @param {VNodeWithData} vnode - 新的虚拟节点
+ */
 function updateDOMListeners(oldVnode: VNodeWithData, vnode: VNodeWithData) {
   if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
     return

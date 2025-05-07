@@ -10,8 +10,6 @@ export const emptyObject: Record<string, any> = Object.freeze({})
  */
 export const isArray = Array.isArray
 
-// These helpers produce better VM code in JS engines due to their
-// explicitness and function inlining.
 /**
  * 判断一个值是否为 `undefined` 或 `null`
  *

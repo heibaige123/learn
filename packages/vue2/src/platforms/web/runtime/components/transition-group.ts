@@ -25,6 +25,9 @@ import VNode from 'core/vdom/vnode'
 import { VNodeWithData } from 'types/vnode'
 import { getComponentName } from 'core/vdom/create-component'
 
+/**
+ * transition-group组件的props定义 - 扩展基本过渡属性并添加特有属性
+ */
 const props = extend(
   {
     tag: String,
@@ -38,11 +41,15 @@ delete props.mode
 export default {
   props,
 
+  /**
+   * 挂载前钩子 - 重写更新方法以处理过渡效果
+   */
   beforeMount() {
     const update = this._update
     this._update = (vnode, hydrating) => {
       const restoreActiveInstance = setActiveInstance(this)
       // force removing pass
+      // 强制移除处理
       this.__patch__(
         this._vnode,
         this.kept,
@@ -55,6 +62,11 @@ export default {
     }
   },
 
+  /**
+   * 渲染函数 - 处理子元素并准备过渡效果
+   * @param {Function} h - createElement函数
+   * @returns {VNode} - 渲染的虚拟节点
+   */
   render(h: Function) {
     const tag: string = this.tag || this.$vnode.data.tag || 'span'
     const map: Record<string, any> = Object.create(null)
@@ -63,9 +75,11 @@ export default {
     const children: Array<VNode> = (this.children = [])
     const transitionData = extractTransitionData(this)
 
+    // 处理新的子节点
     for (let i = 0; i < rawChildren.length; i++) {
       const c: VNode = rawChildren[i]
       if (c.tag) {
+        // 验证子节点是否有key（必须有key才能正确处理过渡）
         if (c.key != null && String(c.key).indexOf('__vlist') !== 0) {
           children.push(c)
           map[c.key] = c
@@ -80,12 +94,14 @@ export default {
       }
     }
 
+    // 处理前一次渲染的子节点
     if (prevChildren) {
       const kept: Array<VNode> = []
       const removed: Array<VNode> = []
       for (let i = 0; i < prevChildren.length; i++) {
         const c: VNode = prevChildren[i]
         c.data!.transition = transitionData
+        // 记录DOM元素的初始位置
         // @ts-expect-error .getBoundingClientRect is not typed in Node
         c.data!.pos = c.elm.getBoundingClientRect()
         if (map[c.key!]) {
@@ -101,6 +117,9 @@ export default {
     return h(tag, null, children)
   },
 
+  /**
+   * 更新钩子 - 实现FLIP动画技术处理元素移动
+   */
   updated() {
     const children: Array<VNodeWithData> = this.prevChildren
     const moveClass: string = this.moveClass || (this.name || 'v') + '-move'
@@ -110,15 +129,20 @@ export default {
 
     // we divide the work into three loops to avoid mixing DOM reads and writes
     // in each iteration - which helps prevent layout thrashing.
-    children.forEach(callPendingCbs)
-    children.forEach(recordPosition)
-    children.forEach(applyTranslation)
+    // 将工作分为三个循环，避免在每次迭代中混合DOM读取和写入
+    // 这有助于防止布局抖动
+    children.forEach(callPendingCbs) // 调用待处理的回调
+    children.forEach(recordPosition) // 记录新位置
+    children.forEach(applyTranslation) // 应用变换
 
     // force reflow to put everything in position
     // assign to this to avoid being removed in tree-shaking
+    // 强制回流，将所有元素放置到位置
+    // 赋值给this以避免在tree-shaking中被移除
     // $flow-disable-line
     this._reflow = document.body.offsetHeight
 
+    // 应用移动过渡效果
     children.forEach((c: VNode) => {
       if (c.data!.moved) {
         const el: any = c.elm
@@ -143,6 +167,12 @@ export default {
   },
 
   methods: {
+    /**
+     * hasMove方法 - 检测元素是否支持移动过渡效果
+     * @param {HTMLElement} el - 要检测的元素
+     * @param {string} moveClass - 移动CSS类名
+     * @returns {boolean} - 是否支持移动过渡
+     */
     hasMove(el: any, moveClass: string): boolean {
       /* istanbul ignore if */
       if (!hasTransition) {
@@ -157,6 +187,10 @@ export default {
       // transition at this very moment, we make a clone of it and remove
       // all other transition classes applied to ensure only the move class
       // is applied.
+      // 检测应用了移动类的元素是否有CSS过渡。
+      // 由于此刻元素可能正在进入过渡中，
+      // 我们创建一个克隆并移除所有其他过渡类，
+      // 确保只应用移动类。
       const clone: HTMLElement = el.cloneNode()
       if (el._transitionClasses) {
         el._transitionClasses.forEach((cls: string) => {
@@ -173,23 +207,41 @@ export default {
   }
 }
 
+/**
+ * callPendingCbs函数 - 调用DOM元素上挂载的过渡回调函数
+ * @param c - 带有可能包含回调函数的DOM引用的虚拟节点
+ */
 function callPendingCbs(
   c: VNodeWithData & { elm?: { _moveCb?: Function; _enterCb?: Function } }
 ) {
+  // `_moveCb`: 移动过渡的回调函数
   /* istanbul ignore if */
   if (c.elm!._moveCb) {
     c.elm!._moveCb()
   }
+  // `_enterCb`: 进入过渡的回调函数
   /* istanbul ignore if */
   if (c.elm!._enterCb) {
     c.elm!._enterCb()
   }
 }
 
+/**
+ * recordPosition函数 - 记录DOM元素的当前位置
+ * @param {VNodeWithData} c - 带有数据的虚拟节点
+ */
 function recordPosition(c: VNodeWithData) {
   c.data!.newPos = c.elm.getBoundingClientRect()
 }
 
+/**
+ * applyTranslation函数 - 对虚拟节点应用CSS变换以准备移动动画
+ * @param {VNodeWithData} c - 包含位置数据的虚拟节点
+
+Vue的FLIP（First-Last-Invert-Play）动画系统的核心部分，
+用于实现`<transition-group>`组件的移动过渡效果。
+它通过CSS变换创造元素看似从旧位置移动到新位置的视觉效果
+ */
 function applyTranslation(c: VNodeWithData) {
   const oldPos = c.data.pos
   const newPos = c.data.newPos

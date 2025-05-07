@@ -29,10 +29,24 @@ import {
   isPrimitive
 } from '../util/index'
 
+/**
+ * 创建一个空的虚拟节点，作为各种操作的基准节点
+ * @type {VNode} 一个没有标签、数据和子节点的虚拟节点
+ */
 export const emptyNode = new VNode('', {}, [])
 
+/**
+ * 虚拟DOM生命周期钩子名称数组
+ * @type {Array<string>} 包含所有钩子名称的数组
+ */
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
+/**
+ * sameVnode函数 - 判断两个虚拟节点是否相同(用于优化更新过程)
+ * @param {VNode} a - 第一个虚拟节点
+ * @param {VNode} b - 第二个虚拟节点
+ * @returns {boolean} - 如果节点可视为相同则返回true
+ */
 function sameVnode(a, b) {
   return (
     a.key === b.key &&
@@ -45,6 +59,12 @@ function sameVnode(a, b) {
   )
 }
 
+/**
+ * sameInputType函数 - 判断两个输入元素是否为相同类型
+ * @param {VNode} a - 第一个虚拟节点
+ * @param {VNode} b - 第二个虚拟节点
+ * @returns {boolean} - 类型相同则返回true
+ */
 function sameInputType(a, b) {
   if (a.tag !== 'input') return true
   let i
@@ -53,6 +73,13 @@ function sameInputType(a, b) {
   return typeA === typeB || (isTextInputType(typeA) && isTextInputType(typeB))
 }
 
+/**
+ * createKeyToOldIdx函数 - 创建旧子节点的key到索引的映射
+ * @param {Array<VNode>} children - 子节点数组
+ * @param {number} beginIdx - 开始索引
+ * @param {number} endIdx - 结束索引
+ * @returns {Object} - key到索引的映射对象
+ */
 function createKeyToOldIdx(children, beginIdx, endIdx) {
   let i, key
   const map = {}
@@ -63,6 +90,11 @@ function createKeyToOldIdx(children, beginIdx, endIdx) {
   return map
 }
 
+/**
+ * createPatchFunction函数 - 创建平台特定的补丁函数
+ * @param {Object} backend - 平台特定的DOM操作和模块
+ * @returns {Function} - 返回定制的patch函数
+ */
 export function createPatchFunction(backend) {
   let i, j
   const cbs: any = {}
@@ -78,10 +110,21 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * emptyNodeAt函数 - 根据现有DOM元素创建一个空的虚拟节点
+   * @param {Element} elm - 现有的DOM元素
+   * @returns {VNode} - 对应该元素的空虚拟节点
+   */
   function emptyNodeAt(elm) {
     return new VNode(nodeOps.tagName(elm).toLowerCase(), {}, [], undefined, elm)
   }
 
+  /**
+   * createRmCb函数 - 创建一个引用计数的移除回调函数
+   * @param {Element} childElm - 需要移除的DOM元素
+   * @param {number} listeners - 监听器数量（需要执行的回调次数）
+   * @returns {Function} - 带有引用计数的移除函数
+   */
   function createRmCb(childElm, listeners) {
     function remove() {
       if (--remove.listeners === 0) {
@@ -92,6 +135,10 @@ export function createPatchFunction(backend) {
     return remove
   }
 
+  /**
+   * removeNode函数 - 从DOM树中移除一个节点
+   * @param {Element} el - 要移除的DOM元素
+   */
   function removeNode(el) {
     const parent = nodeOps.parentNode(el)
     // element may have already been removed due to v-html / v-text
@@ -100,6 +147,12 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * isUnknownElement函数 - 检测一个标签是否是未知HTML元素
+   * @param {VNode} vnode - 要检查的虚拟节点
+   * @param {boolean} inVPre - 是否在v-pre指令作用域内
+   * @returns {boolean} - 如果是未知元素则返回true
+   */
   function isUnknownElement(vnode, inVPre) {
     return (
       !inVPre &&
@@ -116,8 +169,22 @@ export function createPatchFunction(backend) {
     )
   }
 
+  /**
+   * 记录当前在v-pre指令内创建的元素嵌套深度
+   * @type {number}
+   */
   let creatingElmInVPre = 0
 
+  /**
+   * createElm函数 - 根据虚拟节点创建实际DOM元素
+   * @param {VNode} vnode - 虚拟节点
+   * @param {Array} insertedVnodeQueue - 已插入节点队列
+   * @param {Element} parentElm - 父DOM元素
+   * @param {Element} refElm - 参考元素（插入位置）
+   * @param {boolean} nested - 是否嵌套调用
+   * @param {Array} ownerArray - 所属数组
+   * @param {number} index - 索引
+   */
   function createElm(
     vnode,
     insertedVnodeQueue,
@@ -184,6 +251,14 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * createComponent函数 - 创建组件实例
+   * @param {VNode} vnode - 组件虚拟节点
+   * @param {Array} insertedVnodeQueue - 已插入节点队列
+   * @param {Element} parentElm - 父DOM元素
+   * @param {Element} refElm - 参考元素
+   * @returns {boolean} - 如果是组件并已创建则返回true
+   */
   function createComponent(vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     if (isDef(i)) {
@@ -206,6 +281,11 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * initComponent函数 - 初始化组件实例并连接DOM
+   * @param {VNode} vnode - 组件的虚拟节点
+   * @param {Array} insertedVnodeQueue - 需要调用插入钩子的节点队列
+   */
   function initComponent(vnode, insertedVnodeQueue) {
     if (isDef(vnode.data.pendingInsert)) {
       insertedVnodeQueue.push.apply(
@@ -227,6 +307,13 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * reactivateComponent函数 - 重新激活keep-alive缓存的组件
+   * @param {VNode} vnode - 组件的虚拟节点
+   * @param {Array} insertedVnodeQueue - 需要调用插入钩子的节点队列
+   * @param {Element} parentElm - 父DOM元素
+   * @param {Element} refElm - 参考元素（插入位置）
+   */
   function reactivateComponent(vnode, insertedVnodeQueue, parentElm, refElm) {
     let i
     // hack for #4339: a reactivated component with inner transition
@@ -249,6 +336,12 @@ export function createPatchFunction(backend) {
     insert(parentElm, vnode.elm, refElm)
   }
 
+  /**
+   * insert函数 - 将DOM元素插入到指定位置
+   * @param {Element} parent - 父DOM元素
+   * @param {Element} elm - 要插入的DOM元素
+   * @param {Element} ref - 参考元素（插入位置）
+   */
   function insert(parent, elm, ref) {
     if (isDef(parent)) {
       if (isDef(ref)) {
@@ -260,7 +353,12 @@ export function createPatchFunction(backend) {
       }
     }
   }
-
+  /**
+   * createChildren函数 - 创建虚拟节点的子节点
+   * @param {VNode} vnode - 父虚拟节点
+   * @param {Array|primitive} children - 子节点数组或文本内容
+   * @param {Array} insertedVnodeQueue - 插入节点队列
+   */
   function createChildren(vnode, children, insertedVnodeQueue) {
     if (isArray(children)) {
       if (__DEV__) {
@@ -282,6 +380,11 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * isPatchable函数 - 判断虚拟节点是否可以进行补丁操作
+   * @param {VNode} vnode - 要检查的虚拟节点
+   * @returns {boolean} - 如果节点可补丁则返回true
+   */
   function isPatchable(vnode) {
     while (vnode.componentInstance) {
       vnode = vnode.componentInstance._vnode
@@ -289,6 +392,11 @@ export function createPatchFunction(backend) {
     return isDef(vnode.tag)
   }
 
+  /**
+   * invokeCreateHooks函数 - 调用节点创建相关的钩子函数
+   * @param {VNode} vnode - 虚拟节点
+   * @param {Array} insertedVnodeQueue - 插入节点队列
+   */
   function invokeCreateHooks(vnode, insertedVnodeQueue) {
     for (let i = 0; i < cbs.create.length; ++i) {
       cbs.create[i](emptyNode, vnode)
@@ -303,6 +411,10 @@ export function createPatchFunction(backend) {
   // set scope id attribute for scoped CSS.
   // this is implemented as a special case to avoid the overhead
   // of going through the normal attribute patching process.
+  /**
+   * setScope函数 - 为元素设置作用域CSS ID
+   * @param {VNode} vnode - 虚拟节点
+   */
   function setScope(vnode) {
     let i
     if (isDef((i = vnode.fnScopeId))) {
@@ -327,6 +439,15 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * addVnodes函数 - 批量添加虚拟节点到DOM
+   * @param {Element} parentElm - 父DOM元素
+   * @param {Element} refElm - 参考元素（插入位置）
+   * @param {Array<VNode>} vnodes - 虚拟节点数组
+   * @param {number} startIdx - 开始索引
+   * @param {number} endIdx - 结束索引
+   * @param {Array} insertedVnodeQueue - 插入节点队列
+   */
   function addVnodes(
     parentElm,
     refElm,
@@ -348,6 +469,10 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * invokeDestroyHook函数 - 调用节点及其子节点的销毁钩子
+   * @param {VNode} vnode - 要销毁的虚拟节点
+   */
   function invokeDestroyHook(vnode) {
     let i, j
     const data = vnode.data
@@ -362,6 +487,12 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * removeVnodes函数 - 从DOM中移除指定范围的节点
+   * @param {Array<VNode>} vnodes - 虚拟节点数组
+   * @param {number} startIdx - 开始索引
+   * @param {number} endIdx - 结束索引
+   */
   function removeVnodes(vnodes, startIdx, endIdx) {
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx]
@@ -377,6 +508,11 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * removeAndInvokeRemoveHook函数 - 调用移除钩子并移除节点
+   * @param {VNode} vnode - 要移除的虚拟节点
+   * @param {Function} rm - 可选的引用计数回调函数
+   */
   function removeAndInvokeRemoveHook(vnode, rm?: any) {
     if (isDef(rm) || isDef(vnode.data)) {
       let i
@@ -410,6 +546,14 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * updateChildren函数 - 使用高效算法更新子节点列表
+   * @param {Element} parentElm - 父DOM元素
+   * @param {Array<VNode>} oldCh - 旧的子节点数组
+   * @param {Array<VNode>} newCh - 新的子节点数组
+   * @param {Array} insertedVnodeQueue - 插入节点队列
+   * @param {boolean} removeOnly - 是否仅移除模式(用于transition-group)
+   */
   function updateChildren(
     parentElm,
     oldCh,
@@ -556,6 +700,10 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * checkDuplicateKeys函数 - 检查子节点数组中是否有重复的key
+   * @param {Array<VNode>} children - 子节点数组
+   */
   function checkDuplicateKeys(children) {
     const seenKeys = {}
     for (let i = 0; i < children.length; i++) {
@@ -574,6 +722,14 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * findIdxInOld函数 - 在旧子节点数组中查找与给定节点匹配的索引
+   * @param {VNode} node - 要查找的节点
+   * @param {Array<VNode>} oldCh - 旧子节点数组
+   * @param {number} start - 开始搜索的索引
+   * @param {number} end - 结束搜索的索引
+   * @returns {number|undefined} - 找到匹配节点的索引，未找到则为undefined
+   */
   function findIdxInOld(node, oldCh, start, end) {
     for (let i = start; i < end; i++) {
       const c = oldCh[i]
@@ -581,6 +737,15 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * patchVnode函数 - 更新已存在的节点
+   * @param {VNode} oldVnode - 旧虚拟节点
+   * @param {VNode} vnode - 新虚拟节点
+   * @param {Array} insertedVnodeQueue - 插入节点队列
+   * @param {Array} ownerArray - 节点所属数组
+   * @param {number} index - 节点在数组中的索引
+   * @param {boolean} removeOnly - 是否仅移除
+   */
   function patchVnode(
     oldVnode,
     vnode,
@@ -658,6 +823,12 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * invokeInsertHook函数 - 调用节点的插入钩子
+   * @param {VNode} vnode - 虚拟节点
+   * @param {Array} queue - 需要调用插入钩子的节点队列
+   * @param {boolean} initial - 是否是初始补丁操作
+   */
   function invokeInsertHook(vnode, queue, initial) {
     // delay insert hooks for component root nodes, invoke them after the
     // element is really inserted
@@ -678,6 +849,14 @@ export function createPatchFunction(backend) {
   const isRenderedModule = makeMap('attrs,class,staticClass,staticStyle,key')
 
   // Note: this is a browser-only function so we can assume elms are DOM nodes.
+  /**
+   * hydrate函数 - 将服务端渲染的DOM与虚拟DOM进行匹配和激活
+   * @param {Element} elm - 现有DOM节点
+   * @param {VNode} vnode - 虚拟节点
+   * @param {Array} insertedVnodeQueue - 插入节点队列
+   * @param {boolean} inVPre - 是否在v-pre内
+   * @returns {boolean} - 水合是否成功
+   */
   function hydrate(elm, vnode, insertedVnodeQueue, inVPre?: boolean) {
     let i
     const { tag, data, children } = vnode
@@ -785,6 +964,13 @@ export function createPatchFunction(backend) {
     return true
   }
 
+  /**
+   * assertNodeMatch函数 - 断言DOM节点与虚拟节点匹配
+   * @param {Node} node - DOM节点
+   * @param {VNode} vnode - 虚拟节点
+   * @param {boolean} inVPre - 是否在v-pre内
+   * @returns {boolean} - 节点是否匹配
+   */
   function assertNodeMatch(node, vnode, inVPre) {
     if (isDef(vnode.tag)) {
       return (
@@ -798,6 +984,14 @@ export function createPatchFunction(backend) {
     }
   }
 
+  /**
+   * patch函数 - Vue虚拟DOM补丁算法的主入口
+   * @param {VNode|Element} oldVnode - 旧虚拟节点或DOM元素
+   * @param {VNode} vnode - 新虚拟节点
+   * @param {boolean} hydrating - 是否处于水合模式
+   * @param {boolean} removeOnly - 是否仅移除模式(用于transition-group)
+   * @returns {Element} - 更新后的DOM元素
+   */
   return function patch(oldVnode, vnode, hydrating, removeOnly) {
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)

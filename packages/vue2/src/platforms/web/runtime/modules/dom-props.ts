@@ -4,6 +4,11 @@ import { isSVG } from 'web/util/index'
 
 let svgContainer
 
+/**
+ * updateDOMProps函数 - 更新DOM元素的属性
+ * @param {VNodeWithData} oldVnode - 旧的虚拟节点
+ * @param {VNodeWithData} vnode - 新的虚拟节点
+ */
 function updateDOMProps(oldVnode: VNodeWithData, vnode: VNodeWithData) {
   if (isUndef(oldVnode.data.domProps) && isUndef(vnode.data.domProps)) {
     return
@@ -81,6 +86,12 @@ function updateDOMProps(oldVnode: VNodeWithData, vnode: VNodeWithData) {
 // check platforms/web/util/attrs.js acceptValue
 type acceptValueElm = HTMLInputElement | HTMLSelectElement | HTMLOptionElement
 
+/**
+ * shouldUpdateValue函数 - 决定是否应该更新表单元素的值
+ * @param {HTMLInputElement|HTMLSelectElement|HTMLOptionElement} elm - 表单元素
+ * @param {string} checkVal - 用于比较的值(通常是v-model绑定的值)
+ * @returns {boolean} - 如果元素值应该被更新，则返回true
+ */
 function shouldUpdateValue(elm: acceptValueElm, checkVal: string): boolean {
   return (
     //@ts-expect-error
@@ -91,9 +102,16 @@ function shouldUpdateValue(elm: acceptValueElm, checkVal: string): boolean {
   )
 }
 
+/**
+ * isNotInFocusAndDirty函数 - 检查输入元素是否满足"失焦且值变脏"的条件
+ * @param {HTMLInputElement|HTMLTextAreaElement} elm - 接受值的元素(input或textarea)
+ * @param {string} checkVal - 用于比较的值(通常是v-model绑定的值)
+ * @returns {boolean} - 如果元素失去焦点且值与checkVal不同，则返回true
+ */
 function isNotInFocusAndDirty(elm: acceptValueElm, checkVal: string): boolean {
   // return true when textbox (.number and .trim) loses focus and its value is
   // not equal to the updated value
+  // 当文本框(.number和.trim修饰符)失去焦点且其值不等于更新的值时返回true
   let notInFocus = true
   // #6157
   // work around IE bug when accessing document.activeElement in an iframe
@@ -103,6 +121,12 @@ function isNotInFocusAndDirty(elm: acceptValueElm, checkVal: string): boolean {
   return notInFocus && elm.value !== checkVal
 }
 
+/**
+ * isDirtyWithModifiers函数 - 考虑修饰符检查元素值是否"脏"(已更改)
+ * @param {HTMLElement} elm - 带有值的元素，可能包含v-model修饰符
+ * @param {string} newVal - 新值
+ * @returns {boolean} - 根据应用修饰符后，如果值不同则返回true
+ */
 function isDirtyWithModifiers(elm: any, newVal: string): boolean {
   const value = elm.value
   const modifiers = elm._vModifiers // injected by v-model runtime

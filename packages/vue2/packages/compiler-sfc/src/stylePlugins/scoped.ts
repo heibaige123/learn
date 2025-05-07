@@ -102,6 +102,11 @@ const scopedPlugin: PluginCreator<string> = (id = '') => {
  */
 const processedRules = new WeakSet<Rule>()
 
+/**
+ * processRule函数 - 处理CSS规则，添加作用域标识符
+ * @param {string} id - 作用域ID（通常是组件的唯一标识符）
+ * @param {Rule} rule - CSS规则对象
+ */
 function processRule(id: string, rule: Rule) {
   if (
     processedRules.has(rule) ||
@@ -119,20 +124,55 @@ function processRule(id: string, rule: Rule) {
   }).processSync(rule.selector)
 }
 
+/**
+ * rewriteSelector函数 - 重写CSS选择器以添加作用域
+ * @param {string} id - 组件作用域ID
+ * @param {selectorParser.Selector} selector - 选择器对象
+ * @param {selectorParser.Root} selectorRoot - 选择器根对象
+
+ # 示例
+
+ 1. **基本选择器**:
+    ```
+    .example → .example[data-v-xxxxxx]
+    ```
+
+ 2. **深度选择器**:
+    ```
+    .foo :deep(.bar) → .foo[data-v-xxxxxx] .bar
+    ```
+
+ 3. **全局选择器**:
+    ```
+    :global(.foo) → .foo
+    ```
+
+ 4. **废弃语法处理**:
+    ```
+    .foo >>> .bar → .foo[data-v-xxxxxx] .bar
+
+    .foo /deep/ .bar → .foo[data-v-xxxxxx] .bar
+    ```
+ */
 function rewriteSelector(
   id: string,
   selector: selectorParser.Selector,
   selectorRoot: selectorParser.Root
 ) {
+  /** 跟踪最后一个非伪元素和非组合器节点，用于注入属性选择器 */
   let node: selectorParser.Node | null = null
+
+  /** 控制是否应该注入作用域ID属性选择器 */
   let shouldInject = true
   // find the last child node to insert attribute selector
   selector.each(n => {
     // DEPRECATED ">>>" and "/deep/" combinator
+    // 处理已废弃的深度选择器
     if (
       n.type === 'combinator' &&
       (n.value === '>>>' || n.value === '/deep/')
     ) {
+      // 将`>>>`和`/deep/`组合器替换为空格组合器
       n.value = ' '
       n.spaces.before = n.spaces.after = ''
       // warn(
@@ -142,10 +182,12 @@ function rewriteSelector(
       return false
     }
 
+    // 处理伪元素和伪类选择器
     if (n.type === 'pseudo') {
       const { value } = n
       // deep: inject [id] attribute at the node before the ::v-deep
       // combinator.
+      // 处理`:deep`和`::v-deep`
       if (value === ':deep' || value === '::v-deep') {
         if (n.nodes.length) {
           // .foo ::v-deep(.bar) -> .foo[xxxxxxx] .bar
@@ -208,24 +250,32 @@ function rewriteSelector(
       }
     }
 
+    // 跟踪最后一个有效节点
     if (n.type !== 'pseudo' && n.type !== 'combinator') {
       node = n
     }
   })
 
+  // 处理空格和格式
   if (node) {
     ;(node as selectorParser.Node).spaces.after = ''
   } else {
     // For deep selectors & standalone pseudo selectors,
     // the attribute selectors are prepended rather than appended.
     // So all leading spaces must be eliminated to avoid problems.
+    // 对于深度选择器和独立伪选择器
+    // 属性选择器是前置而非后置的
+    // 因此必须消除所有前导空格以避免问题
     selector.first.spaces.before = ''
   }
 
+  // 注入作用域属性选择器
   if (shouldInject) {
     selector.insertAfter(
       // If node is null it means we need to inject [id] at the start
       // insertAfter can handle `null` here
+      // 如果node为null，表示需要在开头注入[id]
+      // insertAfter可以处理这里的`null`
       node as any,
       selectorParser.attribute({
         attribute: id,
@@ -237,6 +287,11 @@ function rewriteSelector(
   }
 }
 
+/**
+ * isSpaceCombinator函数 - 检测节点是否为空格组合器
+ * @param {selectorParser.Node} node - 选择器解析器节点
+ * @returns {boolean} - 如果是空格组合器则返回true
+ */
 function isSpaceCombinator(node: selectorParser.Node) {
   return node.type === 'combinator' && /^\s+$/.test(node.value)
 }
