@@ -6,7 +6,7 @@ import {
 } from './reactive'
 import type { IfAny } from 'types/utils'
 import Dep from 'core/observer/dep'
-import { warn, isArray, def, isServerRendering } from 'core/util'
+import { warn, def, isServerRendering } from 'core/util'
 import { TrackOpTypes, TriggerOpTypes } from './operations'
 
 /**
@@ -289,7 +289,7 @@ export function toRefs<T extends object>(object: T): ToRefs<T> {
   if (__DEV__ && !isReactive(object)) {
     warn(`toRefs() expects a reactive object but received a plain one.`)
   }
-  const ret: any = isArray(object) ? new Array(object.length) : {}
+  const ret: any = Array.isArray(object) ? new Array(object.length) : {}
   for (const key in object) {
     ret[key] = toRef(object, key)
   }

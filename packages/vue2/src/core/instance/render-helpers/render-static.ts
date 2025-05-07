@@ -21,7 +21,6 @@
 */
 
 import VNode from 'core/vdom/vnode'
-import { isArray } from 'core/util'
 
 /**
  * Runtime helper for rendering static trees.
@@ -85,7 +84,7 @@ export function markOnce(
  * @param isOnce 是否是 v-once 节点
  */
 function markStatic(tree: VNode | Array<VNode>, key: string, isOnce: boolean) {
-  if (isArray(tree)) {
+  if (Array.isArray(tree)) {
     for (let i = 0; i < tree.length; i++) {
       // 字符串节点是文本，不需要打静态标记
       if (tree[i] && typeof tree[i] !== 'string') {

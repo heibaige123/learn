@@ -1,5 +1,4 @@
 import VNode from './vnode'
-import { isArray } from 'core/util'
 import { resolveConstructorOptions } from 'core/instance/init'
 import { queueActivatedComponent } from 'core/observer/scheduler'
 import { createFunctionalComponent } from './create-functional-component'
@@ -333,7 +332,7 @@ function transformModel(options, data: any) {
   // - 获取 `v-model` 定义的回调函数
   if (isDef(existing)) {
     if (
-      isArray(existing)
+      Array.isArray(existing)
         ? existing.indexOf(callback) === -1
         : existing !== callback
     ) {

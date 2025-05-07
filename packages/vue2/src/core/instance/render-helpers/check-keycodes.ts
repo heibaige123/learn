@@ -21,7 +21,7 @@ function generatedHandler(event) {
  */
 
 import config from 'core/config'
-import { hyphenate, isArray } from 'shared/util'
+import { hyphenate } from 'shared/util'
 
 /**
  * 判断实际触发的按键是否与期望的按键不匹配
@@ -30,8 +30,8 @@ import { hyphenate, isArray } from 'shared/util'
  * @returns
  */
 function isKeyNotMatch<T>(expect: T | Array<T>, actual: T): boolean {
-  if (isArray(expect)) {
-    return expect.indexOf(actual) === -1
+  if (Array.isArray(expect)) {
+    return expect.includes(actual)
   } else {
     return expect !== actual
   }

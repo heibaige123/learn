@@ -4,7 +4,6 @@ import { isReactive, isShallow } from './reactivity/reactive'
 import {
   warn,
   noop,
-  isArray,
   isFunction,
   emptyObject,
   hasChanged,
@@ -273,7 +272,7 @@ function doWatch(
       return source
     }
     deep = true
-  } else if (isArray(source)) {
+  } else if (Array.isArray(source)) {
     // 如果是数组，说明是多数据源
     isMultiSource = true
     forceTrigger = source.some(s => isReactive(s) || isShallow(s))

@@ -5,7 +5,6 @@ import {
   def,
   warn,
   hasOwn,
-  isArray,
   hasProto,
   isPlainObject,
   isPrimitive,
@@ -14,7 +13,7 @@ import {
   isServerRendering,
   hasChanged,
   noop
-} from '../util/index'
+} from 'core/util'
 import { isReadonly, isRef, TrackOpTypes, TriggerOpTypes } from '../../v3'
 
 /**
@@ -68,7 +67,7 @@ export class Observer {
     this.dep = mock ? mockDep : new Dep()
     this.vmCount = 0
     def(value, '__ob__', this)
-    if (isArray(value)) {
+    if (Array.isArray(value)) {
       if (!mock) {
         if (hasProto) {
           /* eslint-disable no-proto */
@@ -126,7 +125,7 @@ export function observe(
   if (
     shouldObserve &&
     (ssrMockReactivity || !isServerRendering()) &&
-    (isArray(value) || isPlainObject(value)) &&
+    (Array.isArray(value) || isPlainObject(value)) &&
     Object.isExtensible(value) &&
     !value.__v_skip /* ReactiveFlags.SKIP */ &&
     !isRef(value) &&
@@ -183,7 +182,7 @@ export function defineReactive(
         }
         if (childOb) {
           childOb.dep.depend()
-          if (isArray(value)) {
+          if (Array.isArray(value)) {
             dependArray(value)
           }
         }
@@ -249,7 +248,7 @@ export function set(
     return
   }
   const ob = (target as any).__ob__
-  if (isArray(target) && isValidArrayIndex(key)) {
+  if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
     target.splice(key, 1, val)
     // when mocking for SSR, array methods are not hijacked
@@ -300,7 +299,7 @@ export function del(target: any[] | object, key: any) {
       `Cannot delete reactive property on undefined, null, or primitive value: ${target}`
     )
   }
-  if (isArray(target) && isValidArrayIndex(key)) {
+  if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1)
     return
   }
@@ -346,7 +345,7 @@ function dependArray(value: Array<any>) {
     if (e && e.__ob__) {
       e.__ob__.dep.depend()
     }
-    if (isArray(e)) {
+    if (Array.isArray(e)) {
       dependArray(e)
     }
   }

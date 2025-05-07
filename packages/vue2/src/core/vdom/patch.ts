@@ -23,7 +23,6 @@ import {
   isDef,
   isUndef,
   isTrue,
-  isArray,
   makeMap,
   isRegExp,
   isPrimitive
@@ -360,7 +359,7 @@ export function createPatchFunction(backend) {
    * @param {Array} insertedVnodeQueue - 插入节点队列
    */
   function createChildren(vnode, children, insertedVnodeQueue) {
-    if (isArray(children)) {
+    if (Array.isArray(children)) {
       if (__DEV__) {
         checkDuplicateKeys(children)
       }

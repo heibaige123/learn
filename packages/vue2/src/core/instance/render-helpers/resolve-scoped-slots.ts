@@ -1,5 +1,4 @@
 import type { ScopedSlotsData } from 'types/vnode'
-import { isArray } from 'core/util'
 
 /**
  * 处理作用域插槽（scoped slots）**的运行时辅助函数
@@ -24,7 +23,7 @@ export function resolveScopedSlots(
   res = res || { $stable: !hasDynamicKeys }
   for (let i = 0; i < fns.length; i++) {
     const slot = fns[i]
-    if (isArray(slot)) {
+    if (Array.isArray(slot)) {
       resolveScopedSlots(slot, res, hasDynamicKeys)
     } else if (slot) {
       // marker for reverse proxying v-slot without scope on this.$slots

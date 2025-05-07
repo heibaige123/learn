@@ -19,7 +19,6 @@
 import { observe, Observer } from 'core/observer'
 import {
   def,
-  isArray,
   isPrimitive,
   warn,
   toRawType,
@@ -133,7 +132,7 @@ function makeReactive(target: any, shallow: boolean) {
   // if trying to observe a readonly proxy, return the readonly version.
   if (!isReadonly(target)) {
     if (__DEV__) {
-      if (isArray(target)) {
+      if (Array.isArray(target)) {
         // Vue 2 的响应式系统对数组的根级别跟踪存在限制，建议使用 `ref` 或 `shallowRef`。
         warn(
           `Avoid using Array as root value for ${

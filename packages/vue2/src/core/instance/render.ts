@@ -3,9 +3,8 @@ import {
   nextTick,
   emptyObject,
   handleError,
-  defineReactive,
-  isArray
-} from '../util/index'
+  defineReactive
+} from 'core/util'
 
 import { createElement } from '../vdom/create-element'
 import { installRenderHelpers } from './render-helpers/index'
@@ -171,14 +170,14 @@ export function renderMixin(Vue: typeof Component) {
       setCurrentInstance(prevInst)
     }
     // if the returned array contains only a single node, allow it
-    if (isArray(vnode) && vnode.length === 1) {
+    if (Array.isArray(vnode) && vnode.length === 1) {
       vnode = vnode[0]
     }
     // return empty vnode in case the render function errored out
     if (!(vnode instanceof VNode)) {
       // - 规范化渲染结果，处理边缘情况
       // - 确保始终返回有效的虚拟节点
-      if (__DEV__ && isArray(vnode)) {
+      if (__DEV__ && Array.isArray(vnode)) {
         warn(
           'Multiple root nodes returned from render function. Render function ' +
             'should return a single root node.',

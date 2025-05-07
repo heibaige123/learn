@@ -5,12 +5,6 @@
 export const emptyObject: Record<string, any> = Object.freeze({})
 
 /**
- * 判断一个值是否为数组。
- * 使用原生的 `Array.isArray` 方法进行判断。
- */
-export const isArray = Array.isArray
-
-/**
  * 判断一个值是否为 `undefined` 或 `null`
  *
  * @param v - 要检查的值
@@ -54,13 +48,7 @@ export function isFalse(v: any): boolean {
  * 原始类型包括：字符串、数字、符号和布尔值。
  */
 export function isPrimitive(value: any): boolean {
-  return (
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    // $flow-disable-line
-    typeof value === 'symbol' ||
-    typeof value === 'boolean'
-  )
+  return Object(value) !== value
 }
 
 /**

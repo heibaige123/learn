@@ -6,8 +6,7 @@ import {
   toObject,
   isReservedAttribute,
   camelize,
-  hyphenate,
-  isArray
+  hyphenate
 } from 'core/util/index'
 import type { VNodeData } from 'types/vnode'
 
@@ -35,7 +34,7 @@ export function bindObjectProps(
       __DEV__ &&
         warn('v-bind without argument expects an Object or Array value', this)
     } else {
-      if (isArray(value)) {
+      if (Array.isArray(value)) {
         value = toObject(value)
       }
       let hash

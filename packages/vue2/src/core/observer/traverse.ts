@@ -1,4 +1,4 @@
-import { _Set as Set, isObject, isArray } from '../util/index'
+import { _Set as Set, isObject } from '../util/index'
 import type { SimpleSet } from '../util/index'
 import VNode from '../vdom/vnode'
 import { isRef } from '../../v3'
@@ -32,7 +32,7 @@ export function traverse(val: any) {
  */
 function _traverse(val: any, seen: SimpleSet) {
   let i, keys
-  const isA = isArray(val)
+  const isA = Array.isArray(val)
   // 1. 跳过不需要遍历的情况
   if (
     // 原始类型值（字符串、数字等）

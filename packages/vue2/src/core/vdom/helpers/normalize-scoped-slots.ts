@@ -1,6 +1,6 @@
 import { def } from 'core/util/lang'
 import { normalizeChildren } from 'core/vdom/helpers/normalize-children'
-import { emptyObject, isArray } from 'shared/util'
+import { emptyObject } from 'shared/util'
 import { isAsyncPlaceholder } from './is-async-placeholder'
 import type VNode from '../vnode'
 import { Component } from 'types/component'
@@ -108,7 +108,7 @@ function normalizeScopedSlot(vm, normalSlots, key, fn) {
     setCurrentInstance(vm)
     let res = arguments.length ? fn.apply(null, arguments) : fn({})
     res =
-      res && typeof res === 'object' && !isArray(res)
+      res && typeof res === 'object' && !Array.isArray(res)
         ? [res] // single vnode // 如果返回的是单个 VNode 对象，转成数组
         : normalizeChildren(res) // 否则用 normalizeChildren 规范化
     const vnode: VNode | null = res && res[0]

@@ -2,7 +2,6 @@ import {
   remove,
   isDef,
   hasOwn,
-  isArray,
   isFunction,
   invokeWithErrorHandling,
   warn
@@ -88,10 +87,10 @@ export function registerRef(vnode: VNodeWithData, isRemoval?: boolean) {
       const existing = _isString ? refs[ref] : ref.value
       if (isRemoval) {
         // 移除时，如果是数组，则 remove。
-        isArray(existing) && remove(existing, refValue)
+        Array.isArray(existing) && remove(existing, refValue)
       } else {
         // 注册时，如果还不是数组，先变成数组；如果已是数组且不包含当前值，则 push
-        if (!isArray(existing)) {
+        if (!Array.isArray(existing)) {
           if (_isString) {
             refs[ref] = [refValue]
             setSetupRef(vm, ref, refs[ref])

@@ -2,7 +2,6 @@ import type { Component } from 'types/component'
 import {
   tip,
   toArray,
-  isArray,
   hyphenate,
   formatComponentName,
   invokeWithErrorHandling
@@ -102,7 +101,7 @@ export function eventsMixin(Vue: typeof Component) {
     fn: Function
   ): Component {
     const vm: Component = this
-    if (isArray(event)) {
+    if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
         vm.$on(event[i], fn)
       }
@@ -145,7 +144,7 @@ export function eventsMixin(Vue: typeof Component) {
       return vm
     }
     // array of events
-    if (isArray(event)) {
+    if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
         vm.$off(event[i], fn)
       }

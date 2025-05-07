@@ -1,4 +1,4 @@
-import { isObject, isDef, hasSymbol, isArray } from 'core/util/index'
+import { isObject, isDef, hasSymbol } from 'core/util/index'
 import VNode from 'core/vdom/vnode'
 
 /**
@@ -19,7 +19,7 @@ export function renderList(
     l,
     keys,
     key
-  if (isArray(val) || typeof val === 'string') {
+  if (Array.isArray(val) || typeof val === 'string') {
     // 1. 数组或字符串
     // - 对应 `v-for="item in array"` 或 `v-for="char in string"`
     // - 遍历每个元素，调用 `render(当前值, 索引)`

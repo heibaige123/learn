@@ -3,7 +3,7 @@ import { warn } from './debug'
 import { set } from '../observer/index'
 import { unicodeRegExp } from './lang'
 import { nativeWatch, hasSymbol } from './env'
-import { isArray, isFunction } from 'shared/util'
+import { isFunction } from 'shared/util'
 
 import { ASSET_TYPES, LIFECYCLE_HOOKS } from 'shared/constants'
 
@@ -178,7 +178,7 @@ export function mergeLifecycleHook(
   const res = childVal
     ? parentVal
       ? parentVal.concat(childVal)
-      : isArray(childVal)
+      : Array.isArray(childVal)
       ? childVal
       : [childVal]
     : parentVal
@@ -261,10 +261,10 @@ strats.watch = function (
   for (const key in childVal) {
     let parent = ret[key]
     const child = childVal[key]
-    if (parent && !isArray(parent)) {
+    if (parent && !Array.isArray(parent)) {
       parent = [parent]
     }
-    ret[key] = parent ? parent.concat(child) : isArray(child) ? child : [child]
+    ret[key] = parent ? parent.concat(child) : Array.isArray(child) ? child : [child]
   }
   return ret
 }
@@ -379,7 +379,7 @@ function normalizeProps(options: Record<string, any>, vm?: Component | null) {
   if (!props) return
   const res: Record<string, any> = {}
   let i, val, name
-  if (isArray(props)) {
+  if (Array.isArray(props)) {
     i = props.length
     while (i--) {
       val = props[i]
@@ -415,7 +415,7 @@ function normalizeInject(options: Record<string, any>, vm?: Component | null) {
   const inject = options.inject
   if (!inject) return
   const normalized: Record<string, any> = (options.inject = {})
-  if (isArray(inject)) {
+  if (Array.isArray(inject)) {
     for (let i = 0; i < inject.length; i++) {
       normalized[inject[i]] = { from: inject[i] }
     }

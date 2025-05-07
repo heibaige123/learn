@@ -2,7 +2,6 @@ import VNode, { createTextVNode } from 'core/vdom/vnode'
 import {
   isFalse,
   isTrue,
-  isArray,
   isDef,
   isUndef,
   isPrimitive
@@ -34,7 +33,7 @@ import {
  */
 export function simpleNormalizeChildren(children: any) {
   for (let i = 0; i < children.length; i++) {
-    if (isArray(children[i])) {
+    if (Array.isArray(children[i])) {
       return Array.prototype.concat.apply([], children)
     }
   }
@@ -60,7 +59,7 @@ export function simpleNormalizeChildren(children: any) {
 export function normalizeChildren(children: any): Array<VNode> | undefined {
   return isPrimitive(children)
     ? [createTextVNode(children)]
-    : isArray(children)
+    : Array.isArray(children)
     ? normalizeArrayChildren(children)
     : undefined
 }
@@ -143,7 +142,7 @@ function normalizeArrayChildren(
     lastIndex = res.length - 1
     last = res[lastIndex]
     //  nested
-    if (isArray(c)) {
+    if (Array.isArray(c)) {
       // 如果 c 是数组，递归调用自身，并合并结果。
       if (c.length > 0) {
         c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`)

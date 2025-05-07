@@ -1,5 +1,5 @@
 import config from '../config'
-import { noop, isArray, isFunction } from 'shared/util'
+import { noop, isFunction } from 'shared/util'
 import type { Component } from 'types/component'
 import { currentInstance } from 'v3/currentInstance'
 import { getComponentName } from '../vdom/create-component'
@@ -123,7 +123,7 @@ if (__DEV__) {
           .map(
             (vm, i) =>
               `${i === 0 ? '---> ' : repeat(' ', 5 + i * 2)}${
-                isArray(vm)
+                Array.isArray(vm)
                   ? `${formatComponentName(vm[0])}... (${
                       vm[1]
                     } recursive calls)`

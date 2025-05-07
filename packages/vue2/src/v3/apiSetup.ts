@@ -1,15 +1,14 @@
 import { Component } from 'types/component'
 import { PropOptions } from 'types/options'
-import { popTarget, pushTarget } from '../core/observer/dep'
-import { def, invokeWithErrorHandling, isReserved, warn } from '../core/util'
+import { popTarget, pushTarget } from 'core/observer/dep'
+import { def, invokeWithErrorHandling, isReserved, warn } from 'core/util'
 import VNode from '../core/vdom/vnode'
 import {
   bind,
   emptyObject,
-  isArray,
   isFunction,
   isObject
-} from '../shared/util'
+} from 'shared/util'
 import { currentInstance, setCurrentInstance } from './currentInstance'
 import { shallowReactive } from './reactivity/reactive'
 import { proxyWithRefUnwrap } from './reactivity/ref'
@@ -310,7 +309,7 @@ export function mergeDefaults(
   defaults: Record<string, any>
 ): Record<string, PropOptions> {
   // 如果 raw 是数组，则将其转换为对象格式，每个 prop 都初始化为空对象
-  const props = isArray(raw)
+  const props = Array.isArray(raw)
     ? raw.reduce(
         (normalized, p) => ((normalized[p] = {}), normalized),
         {} as Record<string, PropOptions>
@@ -321,7 +320,7 @@ export function mergeDefaults(
     const opt = props[key]
     if (opt) {
       // 如果 opt 是数组或函数，说明是类型声明，需要包装成对象
-      if (isArray(opt) || isFunction(opt)) {
+      if (Array.isArray(opt) || isFunction(opt)) {
         props[key] = { type: opt, default: defaults[key] }
       } else {
         // 否则直接在原有对象上添加 default 属性

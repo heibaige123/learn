@@ -1,4 +1,4 @@
-import { def, warn, isPlainObject, isArray } from 'core/util'
+import { def, warn, isPlainObject } from 'core/util'
 import {
   isCollectionType,
   isReadonly,
@@ -80,7 +80,7 @@ export function readonly<T extends object>(
 function createReadonly(target: any, shallow: boolean) {
   if (!isPlainObject(target)) {
     if (__DEV__) {
-      if (isArray(target)) {
+      if (Array.isArray(target)) {
         warn(`Vue 2 does not support readonly arrays.`)
       } else if (isCollectionType(target)) {
         warn(
