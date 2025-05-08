@@ -1,4 +1,4 @@
-import { emptyObject, warn } from '../../core/util'
+import { warn } from '../../core/util'
 import { currentInstance } from '../currentInstance'
 
 /**
@@ -16,7 +16,7 @@ export function useCssModule(name = '$style'): Record<string, string> {
   if (!__GLOBAL__) {
     if (!currentInstance) {
       __DEV__ && warn(`useCssModule must be called inside setup()`)
-      return emptyObject
+      return Object.freeze({})
     }
     // 尝试从当前组件实例 (currentInstance) 上获取名为 'name' (默认为 '$style') 的属性
     // 这个属性是由 Vue 的 <style module="name"> 编译时注入的 CSS Modules 对象
@@ -24,13 +24,13 @@ export function useCssModule(name = '$style'): Record<string, string> {
     if (!mod) {
       __DEV__ &&
         warn(`Current instance does not have CSS module named "${name}".`)
-      return emptyObject
+      return Object.freeze({})
     }
     return mod as Record<string, string>
   } else {
     if (__DEV__) {
       warn(`useCssModule() is not supported in the global build.`)
     }
-    return emptyObject
+    return Object.freeze({})
   }
 }

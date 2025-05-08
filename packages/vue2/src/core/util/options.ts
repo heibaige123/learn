@@ -2,7 +2,7 @@ import config from '../config'
 import { warn } from './debug'
 import { set } from '../observer/index'
 import { unicodeRegExp } from './lang'
-import { nativeWatch, hasSymbol } from './env'
+import { nativeWatch } from './env'
 import { isFunction } from 'shared/util'
 
 import { ASSET_TYPES, LIFECYCLE_HOOKS } from 'shared/constants'
@@ -60,9 +60,7 @@ function mergeData(
   if (!from) return to
   let key, toVal, fromVal
 
-  const keys = hasSymbol
-    ? (Reflect.ownKeys(from) as string[])
-    : Object.keys(from)
+  const keys = Reflect.ownKeys(from) as string[]
 
   for (let i = 0; i < keys.length; i++) {
     key = keys[i]
@@ -264,7 +262,11 @@ strats.watch = function (
     if (parent && !Array.isArray(parent)) {
       parent = [parent]
     }
-    ret[key] = parent ? parent.concat(child) : Array.isArray(child) ? child : [child]
+    ret[key] = parent
+      ? parent.concat(child)
+      : Array.isArray(child)
+      ? child
+      : [child]
   }
   return ret
 }

@@ -13,7 +13,6 @@ import {
   warn,
   noop,
   remove,
-  emptyObject,
   validateProp,
   invokeWithErrorHandling
 } from '../util/index'
@@ -333,7 +332,7 @@ export function updateChildComponent(
     (
       (newScopedSlots && !newScopedSlots.$stable) ||
       // 旧插槽不稳定
-      (oldScopedSlots !== emptyObject && !oldScopedSlots.$stable) ||
+      (oldScopedSlots !== Object.freeze({}) && !oldScopedSlots.$stable) ||
       // 新插槽与旧插槽的键不相等
       (newScopedSlots && vm.$scopedSlots.$key !== newScopedSlots.$key) ||
       // 插槽从有到无或从无到有
@@ -372,7 +371,7 @@ export function updateChildComponent(
   // these are also reactive so they may trigger child update if the child
   // used them during render
   // 更新 attrs
-  const attrs = parentVnode.data.attrs || emptyObject
+  const attrs = parentVnode.data.attrs || Object.freeze({})
   if (vm._attrsProxy) {
     // force update if attrs are accessed and has changed since it may be
     // passed to a child component.
@@ -381,7 +380,7 @@ export function updateChildComponent(
       syncSetupProxy(
         vm._attrsProxy,
         attrs,
-        (prevVNode.data && prevVNode.data.attrs) || emptyObject,
+        (prevVNode.data && prevVNode.data.attrs) || Object.freeze({}),
         vm,
         '$attrs'
       )
@@ -392,13 +391,13 @@ export function updateChildComponent(
   vm.$attrs = attrs
 
   // 更新监听器
-  listeners = listeners || emptyObject
+  listeners = listeners || Object.freeze({})
   const prevListeners = vm.$options._parentListeners
   if (vm._listenersProxy) {
     syncSetupProxy(
       vm._listenersProxy,
       listeners,
-      prevListeners || emptyObject,
+      prevListeners || Object.freeze({}),
       vm,
       '$listeners'
     )

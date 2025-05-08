@@ -1,7 +1,6 @@
 import {
   warn,
   nextTick,
-  emptyObject,
   handleError,
   defineReactive
 } from 'core/util'
@@ -36,7 +35,7 @@ export function initRender(vm: Component) {
         parentVnode.data!.scopedSlots,
         vm.$slots
       )
-    : emptyObject
+    : Object.freeze({})
   // bind the createElement fn to this instance
   // so that we get proper render context inside it.
   // args order: tag, data, children, normalizationType, alwaysNormalize
@@ -59,7 +58,7 @@ export function initRender(vm: Component) {
     defineReactive(
       vm,
       '$attrs',
-      (parentData && parentData.attrs) || emptyObject,
+      (parentData && parentData.attrs) || Object.freeze({}),
       () => {
         !isUpdatingChildComponent && warn(`$attrs is readonly.`, vm)
       },
@@ -68,7 +67,7 @@ export function initRender(vm: Component) {
     defineReactive(
       vm,
       '$listeners',
-      options._parentListeners || emptyObject,
+      options._parentListeners || Object.freeze({}),
       () => {
         !isUpdatingChildComponent && warn(`$listeners is readonly.`, vm)
       },
@@ -78,14 +77,14 @@ export function initRender(vm: Component) {
     defineReactive(
       vm,
       '$attrs',
-      (parentData && parentData.attrs) || emptyObject,
+      (parentData && parentData.attrs) || Object.freeze({}),
       null,
       true
     )
     defineReactive(
       vm,
       '$listeners',
-      options._parentListeners || emptyObject,
+      options._parentListeners || Object.freeze({}),
       null,
       true
     )

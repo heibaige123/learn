@@ -59,25 +59,10 @@ export function handleError(err: Error, vm: any, info: string) {
  * @returns 函数执行的结果
  */
 export function invokeWithErrorHandling(
-  /**
-   * 要执行的函数
-   */
   handler: Function,
-  /**
-   * 函数的执行上下文
-   */
   context: any,
-  /**
-   * 函数的参数数组，可以为 null
-   */
   args: null | any[],
-  /**
-   * Vue 实例，用于错误处理时的上下文
-   */
   vm: any,
-  /**
-   * 错误信息的附加描述
-   */
   info: string
 ) {
   let res

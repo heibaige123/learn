@@ -14,7 +14,6 @@ import {
 
 import {
   warn,
-  bind,
   noop,
   hasOwn,
   hyphenate,
@@ -385,7 +384,7 @@ function initMethods(vm: Component, methods: Object) {
         )
       }
     }
-    vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
+    vm[key] = typeof methods[key] !== 'function' ? noop : methods[key].bind(vm)
   }
 }
 

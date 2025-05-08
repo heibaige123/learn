@@ -5,7 +5,6 @@ import {
   isUndef,
   isTrue,
   isObject,
-  hasSymbol,
   isPromise,
   remove
 } from 'core/util/index'
@@ -39,7 +38,7 @@ import type { Component } from 'types/component'
 
  */
 function ensureCtor(comp: any, base) {
-  if (comp.__esModule || (hasSymbol && comp[Symbol.toStringTag] === 'Module')) {
+  if (comp.__esModule || comp[Symbol.toStringTag] === 'Module') {
     comp = comp.default
   }
   return isObject(comp) ? base.extend(comp) : comp

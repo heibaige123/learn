@@ -32,12 +32,7 @@ import {
  ```
  */
 export function simpleNormalizeChildren(children: any) {
-  for (let i = 0; i < children.length; i++) {
-    if (Array.isArray(children[i])) {
-      return Array.prototype.concat.apply([], children)
-    }
-  }
-  return children
+  return children.some(Array.isArray) ? children.flat(1) : children
 }
 
 // 2. When the children contains constructs that always generated nested Arrays,
@@ -77,7 +72,7 @@ export function normalizeChildren(children: any): Array<VNode> | undefined {
  ```
  */
 function isTextNode(node): boolean {
-  return isDef(node) && isDef(node.text) && isFalse(node.isComment)
+  return isDef(node?.text) && isFalse(node.isComment)
 }
 
 /**
@@ -138,7 +133,9 @@ function normalizeArrayChildren(
   let i, c, lastIndex, last
   for (i = 0; i < children.length; i++) {
     c = children[i]
-    if (isUndef(c) || typeof c === 'boolean') continue
+    if (isUndef(c) || typeof c === 'boolean') {
+      continue
+    }
     lastIndex = res.length - 1
     last = res[lastIndex]
     //  nested

@@ -118,17 +118,18 @@ export class EffectScope {
    */
   stop(fromParent?: boolean) {
     if (this.active) {
-      let i, l
-      for (i = 0, l = this.effects.length; i < l; i++) {
-        this.effects[i].teardown()
-      }
-      for (i = 0, l = this.cleanups.length; i < l; i++) {
-        this.cleanups[i]()
-      }
+      this.effects.forEach(effect => {
+        effect.teardown()
+      })
+
+      this.cleanups.forEach(cleanup => {
+        cleanup()
+      })
+
       if (this.scopes) {
-        for (i = 0, l = this.scopes.length; i < l; i++) {
-          this.scopes[i].stop(true)
-        }
+        this.scopes.forEach(scope => {
+          scope.stop(true)
+        })
       }
       // 嵌套作用域，从父作用域中解除引用以避免内存泄漏
       if (!this.detached && this.parent && !fromParent) {

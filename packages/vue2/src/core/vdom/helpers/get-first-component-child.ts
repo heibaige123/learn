@@ -11,15 +11,17 @@ import { isAsyncPlaceholder } from './is-async-placeholder'
 export function getFirstComponentChild(
   children?: Array<VNode>
 ): VNode | undefined {
-  if (Array.isArray(children)) {
-    for (let i = 0; i < children.length; i++) {
-      const c = children[i]
-      // - **`isAsyncPlaceholder(c)`**：
-      // - 检查节点是否是一个异步组件的占位符。
-      // - 异步组件在加载过程中会生成一个占位符节点。
-      if (isDef(c) && (isDef(c.componentOptions) || isAsyncPlaceholder(c))) {
-        return c
-      }
+  if (!Array.isArray(children)) {
+    return undefined
+  }
+
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i]
+    // - **`isAsyncPlaceholder(c)`**：
+    // - 检查节点是否是一个异步组件的占位符。
+    // - 异步组件在加载过程中会生成一个占位符节点。
+    if (isDef(child) && (isDef(child.componentOptions) || isAsyncPlaceholder(child))) {
+      return child
     }
   }
 }

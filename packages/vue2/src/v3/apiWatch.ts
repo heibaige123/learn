@@ -5,8 +5,6 @@ import {
   warn,
   noop,
   isFunction,
-  emptyObject,
-  hasChanged,
   isServerRendering,
   invokeWithErrorHandling
 } from 'core/util'
@@ -15,12 +13,6 @@ import { traverse } from 'core/observer/traverse'
 import Watcher from '../core/observer/watcher'
 import { queueWatcher } from '../core/observer/scheduler'
 import { DebuggerOptions } from './debug'
-
-// 定义常量字符串，用于标识 watcher 的不同阶段
-const WATCHER = `watcher`
-const WATCHER_CB = `${WATCHER} callback`
-const WATCHER_GETTER = `${WATCHER} getter`
-const WATCHER_CLEANUP = `${WATCHER} cleanup`
 
 /**
  * watchEffect 的回调类型，参数为 onCleanup 注册清理函数
@@ -222,7 +214,7 @@ function doWatch(
     flush = 'pre',
     onTrack,
     onTrigger
-  }: WatchOptions = emptyObject
+  }: WatchOptions = Object.freeze({})
 ): WatchStopHandle {
   // watchEffect 不支持 immediate/deep，开发环境下给出警告
   if (__DEV__ && !cb) {
@@ -284,7 +276,7 @@ function doWatch(
           s.__ob__.dep.depend()
           return traverse(s)
         } else if (isFunction(s)) {
-          return call(s, WATCHER_GETTER)
+          return call(s, `watcher getter`)
         } else {
           __DEV__ && warnInvalidSource(s)
         }
@@ -292,7 +284,7 @@ function doWatch(
   } else if (isFunction(source)) {
     if (cb) {
       // 如果有回调，getter 调用 source 并收集依赖
-      getter = () => call(source, WATCHER_GETTER)
+      getter = () => call(source, `watcher getter`)
     } else {
       // watchEffect 情况，getter 直接执行副作用
       getter = () => {
@@ -302,7 +294,7 @@ function doWatch(
         if (cleanup) {
           cleanup()
         }
-        return call(source, WATCHER, [onCleanup])
+        return call(source, 'watcher', [onCleanup])
       }
     }
   } else {
@@ -321,7 +313,7 @@ function doWatch(
   // onCleanup 用于注册清理函数
   let onCleanup: OnCleanup = (fn: () => void) => {
     cleanup = watcher.onStop = () => {
-      call(fn, WATCHER_CLEANUP)
+      call(fn, `watcher cleanup`)
     }
   }
 
@@ -331,7 +323,7 @@ function doWatch(
     if (!cb) {
       getter()
     } else if (immediate) {
-      call(cb, WATCHER_CB, [
+      call(cb, `watcher callback`, [
         getter(),
         isMultiSource ? [] : undefined,
         onCleanup
@@ -360,16 +352,16 @@ function doWatch(
         forceTrigger ||
         (isMultiSource
           ? (newValue as any[]).some((v, i) =>
-              hasChanged(v, (oldValue as any[])[i])
+              Object.is(v, (oldValue as any[])[i])
             )
-          : hasChanged(newValue, oldValue))
+          : Object.is(newValue, oldValue))
       ) {
         // 执行清理函数
         if (cleanup) {
           cleanup()
         }
         // 执行回调
-        call(cb, WATCHER_CB, [
+        call(cb, `watcher callback`, [
           newValue,
           oldValue === INITIAL_WATCHER_VALUE ? undefined : oldValue,
           onCleanup

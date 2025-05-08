@@ -1,4 +1,3 @@
-import { emptyObject } from 'shared/util'
 import { ASTElement, ASTModifiers } from 'types/compiler'
 import { parseFilters } from './parser/filter-parser'
 
@@ -187,7 +186,7 @@ export function addHandler(
   range?: Range,
   dynamic?: boolean
 ) {
-  modifiers = modifiers || emptyObject
+  modifiers = modifiers || Object.freeze({})
   // warn prevent and passive modifier
   /* istanbul ignore if */
   if (__DEV__ && warn && modifiers.prevent && modifiers.passive) {
@@ -240,7 +239,7 @@ export function addHandler(
   }
 
   const newHandler: any = rangeSetItem({ value: value.trim(), dynamic }, range)
-  if (modifiers !== emptyObject) {
+  if (modifiers !== Object.freeze({})) {
     newHandler.modifiers = modifiers
   }
 

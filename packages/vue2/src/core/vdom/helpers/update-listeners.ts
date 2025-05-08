@@ -1,4 +1,4 @@
-import { warn, invokeWithErrorHandling } from 'core/util/index'
+import { warn, invokeWithErrorHandling } from 'core/util'
 import { cached, isUndef, isTrue } from 'shared/util'
 import type { Component } from 'types/component'
 
@@ -74,15 +74,16 @@ export function createFnInvoker(
     const fns = invoker.fns
     if (Array.isArray(fns)) {
       const cloned = fns.slice()
-      for (let i = 0; i < cloned.length; i++) {
+
+      cloned.forEach(clone => {
         invokeWithErrorHandling(
-          cloned[i],
+          clone,
           null,
           arguments as any,
           vm,
           `v-on handler`
         )
-      }
+      })
     } else {
       // return handler return value for single handlers
       return invokeWithErrorHandling(
@@ -94,6 +95,7 @@ export function createFnInvoker(
       )
     }
   }
+
   invoker.fns = fns
   return invoker
 }

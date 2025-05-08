@@ -4,8 +4,6 @@ import { popTarget, pushTarget } from 'core/observer/dep'
 import { def, invokeWithErrorHandling, isReserved, warn } from 'core/util'
 import VNode from '../core/vdom/vnode'
 import {
-  bind,
-  emptyObject,
   isFunction,
   isObject
 } from 'shared/util'
@@ -115,7 +113,7 @@ function createSetupContext(vm: Component): SetupContext {
       if (!vm._attrsProxy) {
         const proxy = (vm._attrsProxy = {})
         def(proxy, '_v_attr_proxy', true)
-        syncSetupProxy(proxy, vm.$attrs, emptyObject, vm, '$attrs')
+        syncSetupProxy(proxy, vm.$attrs, Object.freeze({}), vm, '$attrs')
       }
       return vm._attrsProxy
     },
@@ -123,7 +121,7 @@ function createSetupContext(vm: Component): SetupContext {
     get listeners() {
       if (!vm._listenersProxy) {
         const proxy = (vm._listenersProxy = {})
-        syncSetupProxy(proxy, vm.$listeners, emptyObject, vm, '$listeners')
+        syncSetupProxy(proxy, vm.$listeners, Object.freeze({}), vm, '$listeners')
       }
       return vm._listenersProxy
     },
@@ -132,7 +130,7 @@ function createSetupContext(vm: Component): SetupContext {
       return initSlotsProxy(vm)
     },
     // emit 方法，绑定到当前组件实例
-    emit: bind(vm.$emit, vm) as any,
+    emit: vm.$emit.bind(vm),
     // expose 方法，允许 setup 暴露属性/方法给父组件
     expose(exposed?: Record<string, any>) {
       if (__DEV__) {

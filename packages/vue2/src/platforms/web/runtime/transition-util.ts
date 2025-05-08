@@ -26,7 +26,7 @@ export function resolveTransition(
     }
     extend(res, def)
     return res
-  } else if (typeof def === 'string') {
+  } else {
     return autoCssTransition(def)
   }
 }

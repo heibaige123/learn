@@ -1,20 +1,20 @@
 /**
-### 核心概念
+ ### 核心概念
 
-1. **`reactive`**
-   - 将一个普通对象转换为深度响应式对象。
-   - 对象的所有嵌套属性都会被递归地转换为响应式。
+ 1. **`reactive`**
+ - 将一个普通对象转换为深度响应式对象。
+ - 对象的所有嵌套属性都会被递归地转换为响应式。
 
-2. **`shallowReactive`**
-   - 将一个普通对象转换为浅层响应式对象。
-   - 只有对象的顶层属性是响应式的，嵌套属性不会被递归地转换为响应式。
+ 2. **`shallowReactive`**
+ - 将一个普通对象转换为浅层响应式对象。
+ - 只有对象的顶层属性是响应式的，嵌套属性不会被递归地转换为响应式。
 
-3. **响应式标志（`ReactiveFlags`）**
-   - 用于标记对象的响应式状态，例如是否是只读、是否是浅层响应式等。
+ 3. **响应式标志（`ReactiveFlags`）**
+ - 用于标记对象的响应式状态，例如是否是只读、是否是浅层响应式等。
 
-4. **`observe`**
-   - Vue 2 的核心方法，用于将对象转换为响应式对象。
-*/
+ 4. **`observe`**
+ - Vue 2 的核心方法，用于将对象转换为响应式对象。
+ */
 
 import { observe, Observer } from 'core/observer'
 import { def, isPrimitive, warn, toRawType, isServerRendering } from 'core/util'
@@ -178,7 +178,7 @@ export function isReactive(value: unknown): boolean {
   if (isReadonly(value)) {
     return isReactive((value as Target)[ReactiveFlags.RAW])
   }
-  return !!(value && (value as Target).__ob__)
+  return !!(value as Target)?.__ob__
 }
 
 /**
@@ -187,7 +187,7 @@ export function isReactive(value: unknown): boolean {
  * @returns
  */
 export function isShallow(value: unknown): boolean {
-  return !!(value && (value as Target).__v_isShallow)
+  return !!(value as Target)?.__v_isShallow
 }
 
 /**

@@ -3,18 +3,11 @@ import { initUse } from './use'
 import { initMixin } from './mixin'
 import { initExtend } from './extend'
 import { initAssetRegisters } from './assets'
-import { set, del } from '../observer/index'
+import { set, del, observe } from 'core/observer'
 import { ASSET_TYPES } from 'shared/constants'
 import builtInComponents from '../components/index'
-import { observe } from 'core/observer/index'
 
-import {
-  warn,
-  extend,
-  nextTick,
-  mergeOptions,
-  defineReactive
-} from '../util/index'
+import { warn, extend, nextTick, mergeOptions, defineReactive } from 'core/util'
 import type { GlobalAPI } from 'types/global-api'
 
 export function initGlobalAPI(Vue: GlobalAPI) {

@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import { hasSymbol } from 'core/util/env'
 import testObjectOption from '../../../helpers/test-object-option'
 import { ref } from 'v3'
 
@@ -245,24 +244,22 @@ describe('Options props', () => {
       /* eslint-enable no-new-wrappers */
     })
 
-    if (hasSymbol) {
-      it('symbol', () => {
-        makeInstance(Symbol('foo'), Symbol)
-        expect((console.error as any).mock.calls.length).toBe(0)
-        makeInstance({}, Symbol)
-        expect('Expected Symbol, got Object').toHaveBeenWarned()
-      })
+    it('symbol', () => {
+      makeInstance(Symbol('foo'), Symbol)
+      expect((console.error as any).mock.calls.length).toBe(0)
+      makeInstance({}, Symbol)
+      expect('Expected Symbol, got Object').toHaveBeenWarned()
+    })
 
-      it('warns when expected an explicable type but Symbol was provided', () => {
-        makeInstance(Symbol('foo'), String)
-        expect('Expected String, got Symbol').toHaveBeenWarned()
-      })
+    it('warns when expected an explicable type but Symbol was provided', () => {
+      makeInstance(Symbol('foo'), String)
+      expect('Expected String, got Symbol').toHaveBeenWarned()
+    })
 
-      it('warns when expected an explicable type but Symbol was provided', () => {
-        makeInstance(Symbol('foo'), [String, Number])
-        expect('Expected String, Number, got Symbol').toHaveBeenWarned()
-      })
-    }
+    it('warns when expected an explicable type but Symbol was provided', () => {
+      makeInstance(Symbol('foo'), [String, Number])
+      expect('Expected String, Number, got Symbol').toHaveBeenWarned()
+    })
 
     if (typeof BigInt !== 'undefined') {
       /* global BigInt */
@@ -607,7 +604,7 @@ describe('Options props', () => {
     }
     const r = ref()
     new Vue({
-      render: h => h(Comp, { props: { msg: r }})
+      render: h => h(Comp, { props: { msg: r } })
     }).$mount()
     expect(val).toBe(r)
   })

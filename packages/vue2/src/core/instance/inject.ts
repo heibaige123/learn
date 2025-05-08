@@ -1,4 +1,4 @@
-import { warn, hasSymbol, isFunction, isObject } from '../util/index'
+import { warn, isFunction, isObject } from '../util/index'
 import { defineReactive, toggleObserving } from '../observer/index'
 import type { Component } from 'types/component'
 import { resolveProvided } from 'v3/apiInject'
@@ -23,7 +23,7 @@ export function initProvide(vm: Component) {
     // IE9 doesn't support Object.getOwnPropertyDescriptors so we have to
     // iterate the keys ourselves.
     // 3. 兼容 IE9，遍历所有 key
-    const keys = hasSymbol ? Reflect.ownKeys(provided) : Object.keys(provided)
+    const keys = Reflect.ownKeys(provided)
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
       Object.defineProperty(
@@ -81,7 +81,7 @@ export function resolveInject(
     // 1. 创建结果对象
     const result = Object.create(null)
     // 2. 获取所有 inject 的键
-    const keys = hasSymbol ? Reflect.ownKeys(inject) : Object.keys(inject)
+    const keys = Reflect.ownKeys(inject)
 
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]

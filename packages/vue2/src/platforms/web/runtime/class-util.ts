@@ -12,7 +12,7 @@ export function addClass(el: HTMLElement, cls?: string) {
 
   /* istanbul ignore else */
   if (el.classList) {
-    if (cls.indexOf(' ') > -1) {
+    if (cls.includes(' ')) {
       cls.split(whitespaceRE).forEach(c => el.classList.add(c))
     } else {
       el.classList.add(cls)
@@ -37,7 +37,7 @@ export function removeClass(el: HTMLElement, cls?: string) {
 
   /* istanbul ignore else */
   if (el.classList) {
-    if (cls.indexOf(' ') > -1) {
+    if (cls.includes(' ')) {
       cls.split(whitespaceRE).forEach(c => el.classList.remove(c))
     } else {
       el.classList.remove(cls)
@@ -48,7 +48,7 @@ export function removeClass(el: HTMLElement, cls?: string) {
   } else {
     let cur = ` ${el.getAttribute('class') || ''} `
     const tar = ' ' + cls + ' '
-    while (cur.indexOf(tar) >= 0) {
+    while (cur.includes(tar)) {
       cur = cur.replace(tar, ' ')
     }
     cur = cur.trim()

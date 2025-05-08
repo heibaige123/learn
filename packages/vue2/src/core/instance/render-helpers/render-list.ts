@@ -1,4 +1,4 @@
-import { isObject, isDef, hasSymbol } from 'core/util/index'
+import { isObject, isDef } from 'core/util/index'
 import VNode from 'core/vdom/vnode'
 
 /**
@@ -40,7 +40,7 @@ export function renderList(
     // 3. 对象
     // - 对应 `v-for="(value, key, index) in object"`
     // - 遍历对象的所有键，调用 `render(值, 键, 索引)`
-    if (hasSymbol && val[Symbol.iterator]) {
+    if (val[Symbol.iterator]) {
       // (a) 可迭代对象 (如 Map, Set)
       ret = []
       const iterator: Iterator<any> = val[Symbol.iterator]()

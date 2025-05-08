@@ -9,7 +9,6 @@ import { enter, leave } from 'web/runtime/modules/transition'
  * @returns
  */
 function locateNode(vnode: VNode | VNodeWithData): VNodeWithData {
-  // @ts-expect-error
   return vnode.componentInstance && (!vnode.data || !vnode.data.transition)
     ? locateNode(vnode.componentInstance._vnode!)
     : vnode

@@ -11,7 +11,6 @@ import {
   isTrue,
   hasOwn,
   camelize,
-  emptyObject,
   validateProp
 } from '../util/index'
 import type { Component } from 'types/component'
@@ -58,7 +57,7 @@ export function FunctionalRenderContext(
   this.props = props
   this.children = children
   this.parent = parent
-  this.listeners = data.on || emptyObject
+  this.listeners = data.on || Object.freeze({})
   this.injections = resolveInject(options.inject, parent)
   // - 提供访问普通插槽和作用域插槽的方法
   // - 惰性解析插槽，只在需要时计算插槽内容
@@ -136,7 +135,7 @@ export function createFunctionalComponent(
   if (isDef(propOptions)) {
     // 有明确定义的 props
     for (const key in propOptions) {
-      props[key] = validateProp(key, propOptions, propsData || emptyObject)
+      props[key] = validateProp(key, propOptions, propsData || Object.freeze({}))
     }
   } else {
     // 没有明确定义 props，合并属性

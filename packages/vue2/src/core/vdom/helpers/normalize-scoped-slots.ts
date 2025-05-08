@@ -1,6 +1,5 @@
 import { def } from 'core/util/lang'
 import { normalizeChildren } from 'core/vdom/helpers/normalize-children'
-import { emptyObject } from 'shared/util'
 import { isAsyncPlaceholder } from './is-async-placeholder'
 import type VNode from '../vnode'
 import { Component } from 'types/component'
@@ -47,7 +46,7 @@ export function normalizeScopedSlots(
   } else if (
     isStable &&
     prevScopedSlots &&
-    prevScopedSlots !== emptyObject &&
+    prevScopedSlots !== Object.freeze({}) &&
     key === prevScopedSlots.$key &&
     !hasNormalSlots &&
     !prevScopedSlots.$hasNormal

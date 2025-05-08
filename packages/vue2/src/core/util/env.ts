@@ -132,17 +132,6 @@ export function isNative(Ctor: any): boolean {
   return typeof Ctor === 'function' && /native code/.test(Ctor.toString())
 }
 
-/**
- * 当前环境是否支持 Symbol 和 Reflect.ownKeys。
- *
- * 如果支持，则 `hasSymbol` 为 `true`。
- */
-export const hasSymbol =
-  typeof Symbol !== 'undefined' &&
-  isNative(Symbol) &&
-  typeof Reflect !== 'undefined' &&
-  isNative(Reflect.ownKeys)
-
 let _Set // $flow-disable-line
 /* istanbul ignore if */ if (typeof Set !== 'undefined' && isNative(Set)) {
   // use native Set when available.

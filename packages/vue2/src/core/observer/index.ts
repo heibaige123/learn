@@ -11,7 +11,6 @@ import {
   isUndef,
   isValidArrayIndex,
   isServerRendering,
-  hasChanged,
   noop
 } from 'core/util'
 import { isReadonly, isRef, TrackOpTypes, TriggerOpTypes } from '../../v3'
@@ -190,7 +189,7 @@ export function defineReactive(
     },
     set: function reactiveSetter(newVal) {
       const value = getter ? getter.call(obj) : val
-      if (!hasChanged(value, newVal)) {
+      if (!Object.is(value, newVal)) {
         return
       }
       if (__DEV__ && customSetter) {

@@ -1,10 +1,4 @@
 /**
- * 一个冻结的空对象，用于避免在代码中意外修改。
- * 这是一个不可变的对象，通常用作默认值或占位符。
- */
-export const emptyObject: Record<string, any> = Object.freeze({})
-
-/**
  * 判断一个值是否为 `undefined` 或 `null`
  *
  * @param v - 要检查的值
@@ -349,57 +343,6 @@ export const hyphenate = cached((str: string): string => {
 })
 
 /**
- * Simple bind polyfill for environments that do not support it,
- * e.g., PhantomJS 1.x. Technically, we don't need this anymore
- * since native bind is now performant enough in most browsers.
- * But removing it would mean breaking code that was able to run in
- * PhantomJS 1.x, so this must be kept for backward compatibility.
- */
-
-/* istanbul ignore next */
-/**
- * 一个用于绑定函数上下文的 polyfill 方法。
- *
- * @param fn 要绑定的函数
- * @param ctx 要绑定的上下文对象
- * @returns 返回一个绑定了上下文的函数
- */
-function polyfillBind(fn: Function, ctx: Object): Function {
-  function boundFn(a: any) {
-    const l = arguments.length
-    return l
-      ? l > 1
-        ? fn.apply(ctx, arguments)
-        : fn.call(ctx, a)
-      : fn.call(ctx)
-  }
-
-  boundFn._length = fn.length
-  return boundFn
-}
-
-/**
- * 一个用于绑定函数上下文的工具函数。
- *
- * @param fn - 需要绑定上下文的函数。
- * @param ctx - 要绑定的上下文对象。
- * @returns 返回一个绑定了指定上下文的函数。
- */
-function nativeBind(fn: Function, ctx: Object): Function {
-  return fn.bind(ctx)
-}
-
-/**
- * `bind` 是一个函数引用，根据环境选择使用原生的 `Function.prototype.bind` 方法，
- * 或者使用自定义的 `polyfillBind` 方法作为兼容性实现。
- *
- * - 如果运行环境支持原生的 `Function.prototype.bind`，则直接使用它。
- * - 如果不支持，则使用 `polyfillBind` 提供的兼容实现。
- */
-// @ts-expect-error bind cannot be `undefined`
-export const bind = Function.prototype.bind ? nativeBind : polyfillBind
-
-/**
  * Convert an Array-like object to a real Array.
  */
 /**
@@ -472,7 +415,6 @@ export function toObject(arr: Array<any>): object {
   }
   return res
 }
-
 /* eslint-disable no-unused-vars */
 
 /**
@@ -624,15 +566,4 @@ export function once<T extends (...args: any[]) => any>(fn: T): T {
       fn.apply(this, arguments as any)
     }
   } as any
-}
-
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is#polyfill
-/**
- * 比较两个值是否发生变化。
- * @param x 第一个值
- * @param y 第二个值
- * @returns 如果两个值不同，返回 true；否则返回 false
- */
-export function hasChanged(x: unknown, y: unknown): boolean {
-  return Object.is(x, y)
 }
