@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: false
+
+shellEmulator: true
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 604800 # 7 days
