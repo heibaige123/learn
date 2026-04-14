@@ -1,0 +1,19 @@
+{
+  "name": "@examples/astro-arktype",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "astro build",
+    "clean": "rm -rf node_modules",
+    "dev": "astro dev",
+    "preview": "astro preview",
+    "start": "astro dev"
+  },
+  "dependencies": {
+    "@astrojs/solid-js": "^5.1.0",
+    "@t3-oss/env-core": "workspace:*",
+    "arktype": "2.1.22",
+    "astro": "^5.13.5",
+    "solid-js": "^1.9.9"
+  }
+}

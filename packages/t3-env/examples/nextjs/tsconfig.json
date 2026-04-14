@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "Preserve",
+    "jsx": "react-jsx",
+    "isolatedDeclarations": false,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "plugins": [{ "name": "next" }],
+    "paths": {
+      "~/*": ["./app/*"],
+    },
+  },
+  "include": ["next-env.d.ts", "app", ".next/types/**/*.ts", ".next/dev/types/**/*.ts", "*.js"],
+}

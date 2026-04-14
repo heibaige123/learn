@@ -1,0 +1,24 @@
+{
+  "name": "@examples/nextjs",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "clean": "rm -rf node_modules",
+    "dev": "next dev",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@t3-oss/env-nextjs": "workspace:*",
+    "next": "16.0.10",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "zod": "4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@typescript/native-preview": "7.0.0-dev.20251125.1"
+  }
+}

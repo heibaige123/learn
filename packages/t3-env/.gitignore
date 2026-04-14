@@ -1,0 +1,16 @@
+node_modules
+dist
+.cache
+
+.astro
+.next
+.nuxt
+.output
+.turbo
+.vercel
+.DS_Store
+
+env.d.ts
+next-env.d.ts
+**/.vscode
+**/.zed
